@@ -38,11 +38,10 @@ void loop() {
     
     int averageDistance = totalDistance / it; // Calculate average distance
 
-    Serial.print("Angle: ");
     Serial.print(i);
-    Serial.print(", Sonar: ");
+    Serial.print(",");
     Serial.print(averageDistance);
-    Serial.print(", LiDAR ");
+    Serial.print(",");
     Serial.print(dist);                // Output measure distance value of LiDAR
     Serial.print('\t');
     Serial.print('\n');
