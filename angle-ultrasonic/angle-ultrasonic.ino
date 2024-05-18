@@ -11,6 +11,7 @@ Servo myservo;
 GY26_I2C_Compass compass(0x70);
 
 int it = 10; // Number of iterations for averaging distance
+int lidar = 50;
 float localDeclinationAngle = 0.0; 
 float compassAngle;
 
@@ -46,7 +47,9 @@ void loop() {
 
     Serial.print(compassAngleInt);
     Serial.print(",");
-    Serial.println(averageDistance);
+    Serial.print(averageDistance);
+    Serial.print(",");
+    Serial.println(lidar);
 
   }
 
