@@ -1,68 +1,107 @@
-#include <SoftwareSerial.h>   // Header file of software serial port
-#include <Servo.h>
+#include <SoftwareSerial.h>
+#include "TFMini.h"
 #include <NewPing.h>
+#include <GY26Compass.h>
 
-SoftwareSerial Serial1(2, 3); // Define software serial port name as Serial1 and define pin2 as RX & pin3 as TX
+#define TRIGGER_PIN  12 
+#define ECHO_PIN     11  
+#define MAX_DISTANCE 200 
 
-int dist;                     // Actual distance measurements of LiDAR
-int check;                    // Save check value
-int uart[9];                   // Save data measured by LiDAR
-const int HEADER = 0x59;      // Frame header of data package
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
+GY26_I2C_Compass compass(0x70);
+TFMini tfmini;
+SoftwareSerial SerialTFMini(2, 3); // The only value that matters here is the first one, 2, Rx
+
 int it = 10; // Number of iterations for averaging distance
+float localDeclinationAngle = 0.0; 
+float compassAngle;
+int dist;
 
-NewPing sonar(12, 11, 200);   // Set up NewPing with TRIGGER_PIN as 12, ECHO_PIN as 11, and MAX_DISTANCE as 200
-Servo myservo;                 // Define Servo object
+void getTFminiData(int* distance, int* strength) {
+  static char i = 0;
+  char j = 0;
+  int checksum = 0; 
+  static int rx[9];
+  if(SerialTFMini.available())
+  {  
+    rx[i] = SerialTFMini.read();
+    if(rx[0] != 0x59) {
+      i = 0;
+    } else if(i == 1 && rx[1] != 0x59) {
+      i = 0;
+    } else if(i == 8) {
+      for(j = 0; j < 8; j++) {
+        checksum += rx[j];
+      }
+      if(rx[8] == (checksum % 256)) {
+        *distance = rx[2] + rx[3] * 256;
+        *strength = rx[4] + rx[5] * 256;
+      }
+      i = 0;
+    } else 
+    {
+      i++;
+    } 
+  }  
+}
 
-void setup() {
-  myservo.attach(9);           // Attach servo to pin 9
-  Serial.begin(9600);          // Set bit rate of serial port connecting Arduino with computer
-  Serial1.begin(115200);       // Set bit rate of serial port connecting LiDAR with Arduino
-  delay(3000);                 // Allow sensors to stabilize
+void setup() {  
+  pinMode(10, OUTPUT); // Used to trigger
+  int ledPin = 10;
+  
+  // Step 1: Initialize hardware serial port (serial debug port)
+  Serial.begin(9600);
+  // wait for serial port to connect. Needed for native USB port only
+  while (!Serial);
+     
+  // Step 2: Initialize the data rate for the SoftwareSerial port
+  SerialTFMini.begin(TFMINI_BAUDRATE);
+
+  // Step 3: Initialize the TF Mini sensor
+  tfmini.begin(&SerialTFMini);    
+  Wire.begin();       // Start I2C connectivity
+  compass.setDeclinationAngle(localDeclinationAngle);
 }
 
 void loop() {
-  int i = 0;
+  int l = 0;
   int t = 0;
   int totalDistance = 0;
+  int distance = 0;
+  int strength = 0;
 
-  for (i = 0; i <= 180; i++) {
-    myservo.write(i);          // Rotate servo to angle i
-    delay(20);                  // Give time for the servo to move
-    
+  getTFminiData(&distance, &strength);
+  while(!distance) {
+    getTFminiData(&distance, &strength);
+    if(distance) {
+
     totalDistance = 0;
     for (t = 0; t < it; t++) {
-      unsigned int uS = sonar.ping_cm(); // Get distance from the ultrasonic sensor
+      unsigned int uS = sonar.ping_cm();
       totalDistance += uS;
       delay(10);
+     }
+     
+      int averageDistance = totalDistance / it;
+      float compassAngle = compass.getCompassAngle();
+      // Convert compassAngle to an integer by truncating
+      int compassAngleInt = (int)compassAngle;
+      Serial.print(compassAngleInt);
+      Serial.print(",");
+      Serial.print(averageDistance);
+      Serial.print(",");
+      Serial.println(distance);
     }
+  }
     
-    int averageDistance = totalDistance / it; // Calculate average distance
+  getTFminiData(&distance, &strength);
 
-    Serial.print(i);
-    Serial.print(",");
-    Serial.print(averageDistance);
-    Serial.print(",");
-    Serial.print(dist);                // Output measure distance value of LiDAR
-    Serial.print('\t');
-    Serial.print('\n');
-
-  }
-
-  // Read data from LiDAR
-  if (Serial1.available()) {                // Check if serial port has data input
-    if (Serial1.read() == HEADER) {         // Assess data package frame header 0x59
-      uart[0] = HEADER;
-      if (Serial1.read() == HEADER) {       // Assess data package frame header 0x59
-        uart[1] = HEADER;
-        for (int l = 2; l < 9; l++) {       // Save data in array
-          uart[l] = Serial1.read();
-        }
-        check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
-        if (uart[8] == (check & 0xff)) {     // Verify the received data as per protocol
-          dist = uart[2] + uart[3] * 256;    // Calculate distance value
-        }
-      }
+  while(!distance) {
+    getTFminiData(&distance, &strength);
+    if(distance) {
+      dist = distance;
     }
   }
 
+  delay(100);
 }

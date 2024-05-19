@@ -1,47 +1,72 @@
-#include <SoftwareSerial.h>   //header file of software serial port
-SoftwareSerial Serial1(2, 3); //define software serial port name as Serial1 and define pin2 as RX & pin3 as TX
- 
-int dist;                     //actual distance measurements of LiDAR
-int strength;                 //signal strength of LiDAR
-int check;                    //save check value
-int i;
-int uart[9];                   //save data measured by LiDAR
-const int HEADER = 0x59;      //frame header of data package
- 
- 
-void setup()
-{
-  Serial.begin(9600);         //set bit rate of serial port connecting Arduino with computer
-  Serial1.begin(115200);      //set bit rate of serial port connecting LiDAR with Arduino
-}
- 
- 
-void loop() {
-  if (Serial1.available())                //check if serial port has data input
-  {
-    if (Serial1.read() == HEADER)        //assess data package frame header 0x59
-    {
-      uart[0] = HEADER;
-      if (Serial1.read() == HEADER)      //assess data package frame header 0x59
-      {
-        uart[1] = HEADER;
-        for (i = 2; i < 9; i++)         //save data in array
-        {
-          uart[i] = Serial1.read();
-        }
-        check = uart[0] + uart[1] + uart[2] + uart[3] + uart[4] + uart[5] + uart[6] + uart[7];
-        if (uart[8] == (check & 0xff))        //verify the received data as per protocol
-        {
-          dist = uart[2] + uart[3] * 256;     //calculate distance value
-          strength = uart[4] + uart[5] * 256; //calculate signal strength value
-          Serial.print("dist = ");
-          Serial.print(dist);                 //output measure distance value of LiDAR
-          Serial.print('\t');
-          Serial.print("strength = ");
-          Serial.print(strength);             //output signal strength value
-          Serial.print('\n');
-        }
+#include <SoftwareSerial.h>
+#include "TFMini.h"
+TFMini tfmini;
+
+SoftwareSerial SerialTFMini(2, 3); //The only value that matters here is the first one, 2, Rx
+// serial(1) = pin12=RX, pin13=TX
+// serial(2) = pin16=RX green, pin17=TX white
+
+void getTFminiData(int* distance, int* strength) {
+  static char i = 0;
+  char j = 0;
+  int checksum = 0; 
+  static int rx[9];
+  if(SerialTFMini.available())
+  {  
+    // Serial.println( "tfmini serial available" );
+    rx[i] = SerialTFMini.read();
+    if(rx[0] != 0x59) {
+      i = 0;
+    } else if(i == 1 && rx[1] != 0x59) {
+      i = 0;
+    } else if(i == 8) {
+      for(j = 0; j < 8; j++) {
+        checksum += rx[j];
       }
+      if(rx[8] == (checksum % 256)) {
+        *distance = rx[2] + rx[3] * 256;
+        *strength = rx[4] + rx[5] * 256;
+      }
+      i = 0;
+    } else 
+    {
+      i++;
+    } 
+  }  
+}
+
+
+void setup() {  
+  
+  pinMode(10, OUTPUT);//Used to trigger
+  int ledPin = 10;
+  
+  // Step 1: Initialize hardware serial port (serial debug port)
+  Serial.begin(9600);
+  // wait for serial port to connect. Needed for native USB port only
+  while (!Serial);
+     
+  Serial.println ("Initializing...");
+
+  // Step 2: Initialize the data rate for the SoftwareSerial port
+  SerialTFMini.begin(TFMINI_BAUDRATE);
+
+  // Step 3: Initialize the TF Mini sensor
+  tfmini.begin(&SerialTFMini);    
+}
+
+void loop() 
+{
+  int distance = 0;
+  int strength = 0;
+
+  getTFminiData(&distance, &strength);
+  while(!distance) {
+    getTFminiData(&distance, &strength);
+    if(distance) {
+      Serial.println(distance);
     }
   }
+
+delay(100);
 }
