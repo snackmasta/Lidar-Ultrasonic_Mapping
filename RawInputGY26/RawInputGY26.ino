@@ -1,31 +1,27 @@
-#include <Wire.h>
 #include <GY26Compass.h>
-
-/*
- * This is the compass interface. 
- * The default I2C address is 0x70
- */
-GY26_I2C_Compass compass(0x70);
-
-/*
- * Set this to the correct declination angle 
- * for your location
- */
+#include <SoftwareSerial.h>
+const uint8_t softRxPin = 2;
+const uint8_t softTxPin = 3;
+SoftwareSerial compassSerial(softRxPin, softTxPin);
+GY26_Uart_Compass compass(&compassSerial);
 float localDeclinationAngle = 0.0; 
 
+float compassTemperature;
 float compassAngle;
 
 void setup(){
     Serial.begin(9600); // Start serial monitor
-    Wire.begin();       // Start I2C connectivity
+    compassSerial.begin(9600); // Start serial connectivity with compass
     compass.setDeclinationAngle(localDeclinationAngle);
 }
 
 void loop(){
-  float compassAngle = compass.getCompassAngle();
-  int compassAngleInt = round(compassAngle);
-  Serial.print(compassAngleInt);
-  Serial.print(",50,100");
+  compassTemperature = compass.getTemperatureCelsius();
+  compassAngle = compass.getCompassAngle();
+  Serial.println("=========================================");
+  Serial.print("TEMPERATURE (C): ");Serial.println(compassTemperature);
+  Serial.print("COMPASS ANGLE:  ");Serial.println(compassAngle);
+  Serial.println("=========================================");
   Serial.println();
-  delay(500);
+  delay(1000);
 }

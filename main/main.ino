@@ -17,7 +17,7 @@ const uint8_t softTxPin = 3;
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
 GY26_I2C_Compass compass(0x70);
 TFMini tfmini;
-SoftwareSerial SerialTFMini(4, 5); // The only value that matters here is the first one, 2, Rx
+SoftwareSerial SerialTFMini(4, 5); 
 SoftwareSerial compassSerial(softRxPin, softTxPin);
 
 void getTFminiData(int* distance, int* strength) {
