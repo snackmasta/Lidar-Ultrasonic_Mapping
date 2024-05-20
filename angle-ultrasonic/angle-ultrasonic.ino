@@ -49,7 +49,7 @@ void loop() {
     Serial.print(",");
     Serial.print(averageDistance);
     Serial.print(",");
-    Serial.println(dist);
+    Serial.println(lidar);
   }
 
   // Add a delay before the next sweep

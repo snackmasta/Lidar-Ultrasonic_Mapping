@@ -7,15 +7,18 @@
 #define ECHO_PIN     11  
 #define MAX_DISTANCE 200 
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
-GY26_I2C_Compass compass(0x70);
-TFMini tfmini;
-SoftwareSerial SerialTFMini(2, 3); // The only value that matters here is the first one, 2, Rx
-
 int it = 10; // Number of iterations for averaging distance
 float localDeclinationAngle = 0.0; 
 float compassAngle;
 int dist;
+const uint8_t softRxPin = 2;
+const uint8_t softTxPin = 3;
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
+GY26_I2C_Compass compass(0x70);
+TFMini tfmini;
+SoftwareSerial SerialTFMini(4, 5); // The only value that matters here is the first one, 2, Rx
+SoftwareSerial compassSerial(softRxPin, softTxPin);
 
 void getTFminiData(int* distance, int* strength) {
   static char i = 0;
@@ -84,7 +87,6 @@ void loop() {
      
       int averageDistance = totalDistance / it;
       float compassAngle = compass.getCompassAngle();
-      // Convert compassAngle to an integer by truncating
       int compassAngleInt = (int)compassAngle;
       Serial.print(compassAngleInt);
       Serial.print(",");
