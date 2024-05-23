@@ -1,64 +1,23 @@
+#include <Arduino.h>
+#include "compass.h"
 #include <SoftwareSerial.h>
 #include "TFMini.h"
-#include <GY26Compass.h>
 
-// Define pin numbers for SoftwareSerial
-const uint8_t lidarRxPin = 4;
-const uint8_t lidarTxPin = 5;
-
-// Define pin numbers for compass
-const uint8_t compassRxPin = 2;
-const uint8_t compassTxPin = 3;
-
-// Initialize SoftwareSerial objects
-SoftwareSerial lidarSerial(lidarRxPin, lidarTxPin);
-SoftwareSerial compassSerial(compassRxPin, compassTxPin);
-
-// Initialize TFMini and GY26 compass objects
 TFMini tfmini;
-GY26_Uart_Compass compass(&compassSerial);
 
-void setup() {
-  // Start serial communication for debugging
-  Serial.begin(9600);
+SoftwareSerial SerialTFMini(4, 5); //The only value that matters here is the first one, 2, Rx
+// serial(1) = pin12=RX, pin13=TX
+// serial(2) = pin16=RX green, pin17=TX white
 
-  // Initialize SoftwareSerial for lidar and compass
-  lidarSerial.begin(TFMINI_BAUDRATE);
-  compassSerial.begin(9600);
-
-  // Initialize TFMini and set declination angle for compass
-  tfmini.begin(&lidarSerial);
-  compass.setDeclinationAngle(0.0);
-}
-
-void loop() {
-  // Variables to store lidar distance and compass angle
-  int distance = 0;
-  float angle = 0.0;
-
-  // Get lidar distance data
-  getTFminiData(&distance);
-
-  // Get compass angle data
-  angle = compass.getCompassAngle();
-
-  // Print angle and distance in the format "<angle>,<distance>"
-  Serial.print(angle);
-  Serial.print(",");
-  Serial.println(distance);
-
-  // Delay for stability
-  delay(100);
-}
-
-void getTFminiData(int* distance) {
+void getTFminiData(int* distance, int* strength) {
   static char i = 0;
   char j = 0;
   int checksum = 0; 
   static int rx[9];
-  
-  if(lidarSerial.available()) {  
-    rx[i] = lidarSerial.read();
+  if(SerialTFMini.available())
+  {  
+    // Serial.println( "tfmini serial available" );
+    rx[i] = SerialTFMini.read();
     if(rx[0] != 0x59) {
       i = 0;
     } else if(i == 1 && rx[1] != 0x59) {
@@ -69,10 +28,40 @@ void getTFminiData(int* distance) {
       }
       if(rx[8] == (checksum % 256)) {
         *distance = rx[2] + rx[3] * 256;
+        *strength = rx[4] + rx[5] * 256;
       }
       i = 0;
-    } else {
+    } else 
+    {
       i++;
     } 
   }  
+}
+
+void setup() {
+    setupCompass();
+    pinMode(10, OUTPUT);//Used to trigger
+    int ledPin = 10;
+    Serial.begin(9600);
+    while (!Serial);
+    SerialTFMini.begin(TFMINI_BAUDRATE);
+    tfmini.begin(&SerialTFMini); 
+}
+
+void loop() {
+    int distance = 0;
+    int strength = 0;
+
+    getTFminiData(&distance, &strength);
+    while(!distance) {
+      getTFminiData(&distance, &strength);
+      if(distance) {
+        float angle = getCompassAngle();
+        Serial.print(angle);
+        Serial.print(",");
+        Serial.println(distance);
+      }
+    }
+
+    delay(100);
 }

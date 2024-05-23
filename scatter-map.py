@@ -71,7 +71,7 @@ ax.set_xlim(-MAX_DISTANCE, MAX_DISTANCE)
 ax.set_ylim(-MAX_DISTANCE, MAX_DISTANCE)
 
 # Animate the plot
-ani = animation.FuncAnimation(fig, update, interval=100, cache_frame_data=False)
+ani = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
 
 # Show the plot
 plt.show()

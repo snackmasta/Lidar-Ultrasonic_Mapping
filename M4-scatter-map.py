@@ -47,8 +47,15 @@ prev_y2 = None
 nearest_arrow = None
 farthest_arrow = None
 
+# Text annotations for nearest and farthest points
+nearest_annotation = None
+farthest_annotation = None
+
+# Add a black dot at the origin (0,0)
+ax.scatter([0], [0], color='black', zorder=5)
+
 def update(frame):
-    global prev_x1, prev_y1, prev_x2, prev_y2, nearest_arrow, farthest_arrow
+    global prev_x1, prev_y1, prev_x2, prev_y2, nearest_arrow, farthest_arrow, nearest_annotation, farthest_annotation
     if ser.in_waiting > 0:
         try:
             data = ser.readline().decode('utf-8', errors='ignore').strip()
@@ -120,6 +127,14 @@ def update(frame):
                                                 arrowprops=dict(facecolor='green', arrowstyle='->'))
                     farthest_arrow = ax.annotate('', xy=farthest_point[2], xytext=(0, 0),
                                                  arrowprops=dict(facecolor='red', arrowstyle='->'))
+
+                    # Add Min and Max text annotations
+                    if nearest_annotation:
+                        nearest_annotation.remove()
+                    if farthest_annotation:
+                        farthest_annotation.remove()
+                    nearest_annotation = ax.text(nearest_point[2][0], nearest_point[2][1], 'Min', color='green', fontsize=12)
+                    farthest_annotation = ax.text(farthest_point[2][0], farthest_point[2][1], 'Max', color='red', fontsize=12)
 
         except UnicodeDecodeError:
             pass  # Ignore lines that cause decoding errors
