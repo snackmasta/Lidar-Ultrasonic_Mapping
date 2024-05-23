@@ -7,6 +7,7 @@ import numpy as np
 
 # Constants
 MAX_DISTANCE = 200
+MAX_TRACE_DISTANCE = 50
 
 # Setup the serial port connection
 ser = serial.Serial('COM21', 9600, timeout=1)
@@ -75,11 +76,13 @@ def update(frame):
                     scatter1.set_offsets(np.array(scatter1_data))
                     scatter2.set_offsets(np.array(scatter2_data))
 
-                    # Draw lines connecting to the nearest previous point
+                    # Draw lines connecting to the nearest previous point if within max trace distance
                     if prev_x1 is not None and prev_y1 is not None:
-                        ax.plot([prev_x1, x1], [prev_y1, y1], 'green')
+                        if math.sqrt((x1 - prev_x1)**2 + (y1 - prev_y1)**2) <= MAX_TRACE_DISTANCE:
+                            ax.plot([prev_x1, x1], [prev_y1, y1], 'green')
                     if prev_x2 is not None and prev_y2 is not None:
-                        ax.plot([prev_x2, x2], [prev_y2, y2], 'green')
+                        if math.sqrt((x2 - prev_x2)**2 + (y2 - prev_y2)**2) <= MAX_TRACE_DISTANCE:
+                            ax.plot([prev_x2, x2], [prev_y2, y2], 'green')
 
                     # Update previous coordinates
                     prev_x1, prev_y1 = x1, y1
