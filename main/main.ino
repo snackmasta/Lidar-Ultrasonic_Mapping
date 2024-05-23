@@ -88,9 +88,11 @@ void loop() {
       int compassAngleInt = (int)compassAngle;
       Serial.print(compassAngleInt);
       Serial.print(",");
-      Serial.print(averageDistance);
+      Serial.print(distance);
       Serial.print(",");
-      Serial.println(distance);
+      Serial.print(distance);
+      Serial.print(",");
+      Serial.println("2");
     }
   }
     
