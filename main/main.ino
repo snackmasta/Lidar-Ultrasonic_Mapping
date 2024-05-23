@@ -6,6 +6,7 @@
 #define TRIGGER_PIN  12 
 #define ECHO_PIN     11  
 #define MAX_DISTANCE 200 
+#define BUTTON_PIN   6    // Define the pin for the pushbutton
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
 GY26_I2C_Compass compass(0x70);
@@ -16,14 +17,14 @@ int it = 10; // Number of iterations for averaging distance
 float localDeclinationAngle = 0.0; 
 float compassAngle;
 int dist;
+int logNumber = 1; // Initialize logNumber to 1
 
 void getTFminiData(int* distance, int* strength) {
   static char i = 0;
   char j = 0;
   int checksum = 0; 
   static int rx[9];
-  if(SerialTFMini.available())
-  {  
+  if(SerialTFMini.available()) {  
     rx[i] = SerialTFMini.read();
     if(rx[0] != 0x59) {
       i = 0;
@@ -38,8 +39,7 @@ void getTFminiData(int* distance, int* strength) {
         *strength = rx[4] + rx[5] * 256;
       }
       i = 0;
-    } else 
-    {
+    } else {
       i++;
     } 
   }  
@@ -47,7 +47,7 @@ void getTFminiData(int* distance, int* strength) {
 
 void setup() {  
   pinMode(10, OUTPUT); // Used to trigger
-  int ledPin = 10;
+  pinMode(BUTTON_PIN, INPUT_PULLUP); // Set button pin as input with internal pull-up resistor
   
   // Step 1: Initialize hardware serial port (serial debug port)
   Serial.begin(9600);
@@ -74,14 +74,13 @@ void loop() {
   while(!distance) {
     getTFminiData(&distance, &strength);
     if(distance) {
+      totalDistance = 0;
+      for (t = 0; t < it; t++) {
+        unsigned int uS = sonar.ping_cm();
+        totalDistance += uS;
+        delay(10);
+      }
 
-    totalDistance = 0;
-    for (t = 0; t < it; t++) {
-      unsigned int uS = sonar.ping_cm();
-      totalDistance += uS;
-      delay(10);
-     }
-     
       int averageDistance = totalDistance / it;
       float compassAngle = compass.getCompassAngle();
       // Convert compassAngle to an integer by truncating
@@ -92,17 +91,22 @@ void loop() {
       Serial.print(",");
       Serial.print(distance);
       Serial.print(",");
-      Serial.println("2");
+      Serial.println(logNumber);
     }
   }
-    
-  getTFminiData(&distance, &strength);
 
+  getTFminiData(&distance, &strength);
   while(!distance) {
     getTFminiData(&distance, &strength);
     if(distance) {
       dist = distance;
     }
+  }
+
+  // Check if the pushbutton is pressed
+  if (digitalRead(BUTTON_PIN) == LOW) {
+    logNumber++;
+    delay(200); // Debounce delay
   }
 
   delay(10);
