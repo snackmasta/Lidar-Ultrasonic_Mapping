@@ -44,18 +44,18 @@ prev_x2 = None
 prev_y2 = None
 
 # Arrows for nearest and farthest points
-nearest_arrow = None
-farthest_arrow = None
+nearest_arrows = []
+farthest_arrows = []
 
 # Text annotations for nearest and farthest points
-nearest_annotation = None
-farthest_annotation = None
+nearest_annotations = []
+farthest_annotations = []
 
 # Add a black dot at the origin (0,0)
 ax.scatter([0], [0], color='black', zorder=5)
 
 def update(frame):
-    global prev_x1, prev_y1, prev_x2, prev_y2, nearest_arrow, farthest_arrow, nearest_annotation, farthest_annotation
+    global prev_x1, prev_y1, prev_x2, prev_y2, nearest_arrows, farthest_arrows, nearest_annotations, farthest_annotations
     if ser.in_waiting > 0:
         try:
             data = ser.readline().decode('utf-8', errors='ignore').strip()
@@ -112,29 +112,45 @@ def update(frame):
                     compass_needle.set_data([0, math.cos(radians)], [0, math.sin(radians)])
 
                     # Find nearest and farthest points from the origin
-                    nearest_point = min(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
-                    farthest_point = max(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
+                    nearest_distance = min(math.sqrt(x**2 + y**2) for _, _, (x, y) in all_distances)
+                    farthest_distance = max(math.sqrt(x**2 + y**2) for _, _, (x, y) in all_distances)
+                    
+                    nearest_points = [item for item in all_distances if math.isclose(math.sqrt(item[2][0]**2 + item[2][1]**2), nearest_distance)]
+                    farthest_points = [item for item in all_distances if math.isclose(math.sqrt(item[2][0]**2 + item[2][1]**2), farthest_distance)]
 
-                    nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
-                    farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
+                    nearest_text.set_text(f'Nearest Point:\nDistance: {nearest_distance:.2f}')
+                    farthest_text.set_text(f'Farthest Point:\nDistance: {farthest_distance:.2f}')
 
-                    # Add arrows for nearest and farthest points
-                    if nearest_arrow:
-                        nearest_arrow.remove()
-                    if farthest_arrow:
-                        farthest_arrow.remove()
-                    nearest_arrow = ax.annotate('', xy=nearest_point[2], xytext=(0, 0),
-                                                arrowprops=dict(facecolor='green', arrowstyle='->'))
-                    farthest_arrow = ax.annotate('', xy=farthest_point[2], xytext=(0, 0),
-                                                 arrowprops=dict(facecolor='red', arrowstyle='->'))
+                    # Remove previous arrows and annotations
+                    for arrow in nearest_arrows:
+                        arrow.remove()
+                    for arrow in farthest_arrows:
+                        arrow.remove()
+                    for annotation in nearest_annotations:
+                        annotation.remove()
+                    for annotation in farthest_annotations:
+                        annotation.remove()
 
-                    # Add Min and Max text annotations
-                    if nearest_annotation:
-                        nearest_annotation.remove()
-                    if farthest_annotation:
-                        farthest_annotation.remove()
-                    nearest_annotation = ax.text(nearest_point[2][0], nearest_point[2][1], 'Min', color='green', fontsize=12)
-                    farthest_annotation = ax.text(farthest_point[2][0], farthest_point[2][1], 'Max', color='red', fontsize=12)
+                    nearest_arrows = []
+                    farthest_arrows = []
+                    nearest_annotations = []
+                    farthest_annotations = []
+
+                    # Add arrows and annotations for all nearest points
+                    for point in nearest_points:
+                        arrow = ax.annotate('', xy=point[2], xytext=(0, 0),
+                                            arrowprops=dict(facecolor='green', arrowstyle='->'))
+                        annotation = ax.text(point[2][0], point[2][1], 'Min', color='green', fontsize=12)
+                        nearest_arrows.append(arrow)
+                        nearest_annotations.append(annotation)
+                    
+                    # Add arrows and annotations for all farthest points
+                    for point in farthest_points:
+                        arrow = ax.annotate('', xy=point[2], xytext=(0, 0),
+                                            arrowprops=dict(facecolor='red', arrowstyle='->'))
+                        annotation = ax.text(point[2][0], point[2][1], 'Max', color='red', fontsize=12)
+                        farthest_arrows.append(arrow)
+                        farthest_annotations.append(annotation)
 
         except UnicodeDecodeError:
             pass  # Ignore lines that cause decoding errors
