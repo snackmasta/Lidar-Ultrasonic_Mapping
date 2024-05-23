@@ -43,14 +43,12 @@ prev_y1 = None
 prev_x2 = None
 prev_y2 = None
 
-# Initialize annotations for nearest and farthest points
-nearest_annotation = ax.annotate('', xy=(0, 0), xytext=(0, 0),
-                                 arrowprops=dict(facecolor='green', shrink=0.05))
-farthest_annotation = ax.annotate('', xy=(0, 0), xytext=(0, 0),
-                                  arrowprops=dict(facecolor='purple', shrink=0.05))
+# Arrows for nearest and farthest points
+nearest_arrow = None
+farthest_arrow = None
 
 def update(frame):
-    global prev_x1, prev_y1, prev_x2, prev_y2
+    global prev_x1, prev_y1, prev_x2, prev_y2, nearest_arrow, farthest_arrow
     if ser.in_waiting > 0:
         try:
             data = ser.readline().decode('utf-8', errors='ignore').strip()
@@ -113,14 +111,15 @@ def update(frame):
                     nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
                     farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
 
-                    # Update annotations for nearest and farthest points
-                    nearest_annotation.xy = nearest_point[2]
-                    nearest_annotation.set_text(f'Angle: {nearest_point[0]}, Distance: {nearest_point[1]:.2f}')
-                    nearest_annotation.set_position((nearest_point[2][0] + 5, nearest_point[2][1] + 5))
-
-                    farthest_annotation.xy = farthest_point[2]
-                    farthest_annotation.set_text(f'Angle: {farthest_point[0]}, Distance: {farthest_point[1]:.2f}')
-                    farthest_annotation.set_position((farthest_point[2][0] + 5, farthest_point[2][1] + 5))
+                    # Add arrows for nearest and farthest points
+                    if nearest_arrow:
+                        nearest_arrow.remove()
+                    if farthest_arrow:
+                        farthest_arrow.remove()
+                    nearest_arrow = ax.annotate('', xy=nearest_point[2], xytext=(0, 0),
+                                                arrowprops=dict(facecolor='green', arrowstyle='->'))
+                    farthest_arrow = ax.annotate('', xy=farthest_point[2], xytext=(0, 0),
+                                                 arrowprops=dict(facecolor='red', arrowstyle='->'))
 
         except UnicodeDecodeError:
             pass  # Ignore lines that cause decoding errors
