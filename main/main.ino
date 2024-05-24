@@ -13,7 +13,7 @@ GY26_I2C_Compass compass(0x70);
 TFMini tfmini;
 SoftwareSerial SerialTFMini(4, 5); // The only value that matters here is the first one, 2, Rx
 
-int it = 10; // Number of iterations for averaging distance
+int it = 1; // Number of iterations for averaging distance
 float localDeclinationAngle = 0.0; 
 float compassAngle;
 int dist;
@@ -86,7 +86,7 @@ void loop() {
       int compassAngleInt = (int)compassAngle;
       Serial.print(compassAngleInt);
       Serial.print(",");
-      Serial.print(distance);
+      Serial.print(averageDistance);
       Serial.print(",");
       Serial.print(distance);
       Serial.print(",");
