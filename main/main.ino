@@ -78,7 +78,6 @@ void loop() {
       for (t = 0; t < it; t++) {
         unsigned int uS = sonar.ping_cm();
         totalDistance += uS;
-        delay(10);
       }
 
       int averageDistance = totalDistance / it;
