@@ -2,7 +2,7 @@ import serial
 import time
 
 # Configure the serial connection
-ser = serial.Serial('COM5', 9600, timeout=1)
+ser = serial.Serial('COM9', 9600, timeout=1)
 
 # Open the log file in append mode
 with open('./log.txt', 'a') as log_file:
