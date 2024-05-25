@@ -18,6 +18,10 @@ float localDeclinationAngle = 0.0;
 float compassAngle;
 int dist;
 int logNumber = 1; // Initialize logNumber to 1
+float SensorData, KalmanFilterData;
+float Xt, Xt_update, Xt_prev;
+float Pt, Pt_update, Pt_prev;
+float Kt, R, Q;
 
 void getTFminiData(int* distance, int* strength) {
   static char i = 0;
@@ -60,7 +64,12 @@ void setup() {
   // Step 3: Initialize the TF Mini sensor
   tfmini.begin(&SerialTFMini);    
   Wire.begin();       // Start I2C connectivity
-  compass.setDeclinationAngle(localDeclinationAngle);
+  compass.setDeclinationAngle(localDeclinationAngle - 6);
+
+  // Kalman filter
+  R=10;
+  Q=0.5;
+  Pt_prev=1;
 }
 
 void loop() {
@@ -84,7 +93,23 @@ void loop() {
       float compassAngle = compass.getCompassAngle();
       // Convert compassAngle to an integer by truncating
       int compassAngleInt = (int)compassAngle;
-      Serial.print(compassAngleInt);
+
+      // kalman filter
+      SensorData = compassAngle;
+      Xt_update = Xt_prev;
+      Pt_update = Pt_prev + Q;
+      Kt = Pt_update/(Pt_update + R);
+      Xt = Xt_update + (Kt * (SensorData - Xt_update));
+      Pt = (1-Kt)*Pt_update;
+    
+      Xt_prev = Xt;
+      Pt_prev = Pt;
+    
+      KalmanFilterData = Xt;
+      // Convert KalmanFilterData to an integer by truncating
+      int KalmanFilterDataInt = (int)KalmanFilterData;
+
+      Serial.print(KalmanFilterDataInt);
       Serial.print(",");
       Serial.print(averageDistance);
       Serial.print(",");
