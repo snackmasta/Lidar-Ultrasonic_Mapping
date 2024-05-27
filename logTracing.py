@@ -126,13 +126,14 @@ def update(frame):
                 scatter3_data = []
                 scatter4_data = []
                 all_distances = []
-                model = LinearRegression()  # Initialize the model variable
-
                 front_sonar_points = []
+                right_sonar_points = []
+                left_sonar_points = []
+
                 for angle, (d1, d2, d3, d4) in data_dict.items():
                     rad = math.radians(angle)
-                    rad_right = math.radians(angle - 90)
-                    rad_left = math.radians(angle + 90)
+                    rad_right = math.radians(angle + 90)
+                    rad_left = math.radians(angle - 90)
                     x1_scatter = d1 * math.cos(rad)
                     y1_scatter = d1 * math.sin(rad)
                     x2_scatter = d2 * math.cos(rad)
@@ -151,8 +152,10 @@ def update(frame):
                     all_distances.append((angle, d3, (x3_scatter, y3_scatter)))
                     all_distances.append((angle, d4, (x4_scatter, y4_scatter)))
                     
-                    # Collect front sonar points for linear regression
+                    # Collect sonar points for linear regression
                     front_sonar_points.append((x1_scatter, y1_scatter))
+                    right_sonar_points.append((x3_scatter, y3_scatter))
+                    left_sonar_points.append((x4_scatter, y4_scatter))
 
                 scatter1.set_offsets(np.array(scatter1_data))
                 scatter2.set_offsets(np.array(scatter2_data))
@@ -186,17 +189,39 @@ def update(frame):
                     farthest_annotation.remove()
                 nearest_annotation = ax.text(nearest_point[2][0], nearest_point[2][1], 'Min', color='green', fontsize=12)
                 farthest_annotation = ax.text(farthest_point[2][0], farthest_point[2][1], 'Max', color='red', fontsize=12)
-                
+
                 # Linear Regression for front sonar data
                 if len(front_sonar_points) > 1:
                     X = np.array(front_sonar_points)[:, 0].reshape(-1, 1)
                     y = np.array(front_sonar_points)[:, 1]
-                    model.fit(X, y)
+                    model = LinearRegression().fit(X, y)
                     x_range = np.linspace(-MAX_DISTANCE, MAX_DISTANCE, 100)
                     y_range = model.predict(x_range.reshape(-1, 1))
-                    if 'lr_line' in ax.lines:
-                        ax.lines.remove(ax.lines[-1])
-                    ax.plot(x_range, y_range, color='cyan', linewidth=2, label='Front Sonar Regression')
+                    if hasattr(update, 'lr_line_front'):
+                        update.lr_line_front.remove()
+                    update.lr_line_front, = ax.plot(x_range, y_range, color='cyan', linewidth=2, label='Front Sonar Regression')
+
+                # Perpendicular Regression for right sonar data
+                if len(right_sonar_points) > 1:
+                    X = np.array(right_sonar_points)[:, 1].reshape(-1, 1)
+                    y = np.array(right_sonar_points)[:, 0]
+                    model = LinearRegression().fit(X, y)
+                    y_range = np.linspace(-MAX_DISTANCE, MAX_DISTANCE, 100)
+                    x_range = model.predict(y_range.reshape(-1, 1))
+                    if hasattr(update, 'lr_line_right'):
+                        update.lr_line_right.remove()
+                    update.lr_line_right, = ax.plot(x_range, y_range, color='magenta', linewidth=2, label='Right Sonar Regression')
+
+                # Perpendicular Regression for left sonar data
+                if len(left_sonar_points) > 1:
+                    X = np.array(left_sonar_points)[:, 1].reshape(-1, 1)
+                    y = np.array(left_sonar_points)[:, 0]
+                    model = LinearRegression().fit(X, y)
+                    y_range = np.linspace(-MAX_DISTANCE, MAX_DISTANCE, 100)
+                    x_range = model.predict(y_range.reshape(-1, 1))
+                    if hasattr(update, 'lr_line_left'):
+                        update.lr_line_left.remove()
+                    update.lr_line_left, = ax.plot(x_range, y_range, color='purple', linewidth=2, label='Left Sonar Regression')
 
                 # Update the angle-time plot
                 current_time = time.time() - start_time
