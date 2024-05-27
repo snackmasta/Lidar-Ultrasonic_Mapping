@@ -1,18 +1,18 @@
 import os
-import serial
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import math
 import time
 import numpy as np
 from collections import deque
+from sklearn.linear_model import LinearRegression
 
 # Constants
 MAX_DISTANCE = 200
 TIME_WINDOW = 60  # Time window for the angle-time plot
 
 # Setup the log file connection
-log_file_path = './log/log1.txt'
+log_file_path = './log/sisi.txt'
 log_file = open(log_file_path, 'r')
 
 # Dictionary to store latest data for each angle
@@ -126,10 +126,13 @@ def update(frame):
                 scatter3_data = []
                 scatter4_data = []
                 all_distances = []
+                model = LinearRegression()  # Initialize the model variable
+
+                front_sonar_points = []
                 for angle, (d1, d2, d3, d4) in data_dict.items():
                     rad = math.radians(angle)
-                    rad_right = math.radians(angle + 90)
-                    rad_left = math.radians(angle - 90)
+                    rad_right = math.radians(angle - 90)
+                    rad_left = math.radians(angle + 90)
                     x1_scatter = d1 * math.cos(rad)
                     y1_scatter = d1 * math.sin(rad)
                     x2_scatter = d2 * math.cos(rad)
@@ -147,6 +150,9 @@ def update(frame):
                     all_distances.append((angle, d2, (x2_scatter, y2_scatter)))
                     all_distances.append((angle, d3, (x3_scatter, y3_scatter)))
                     all_distances.append((angle, d4, (x4_scatter, y4_scatter)))
+                    
+                    # Collect front sonar points for linear regression
+                    front_sonar_points.append((x1_scatter, y1_scatter))
 
                 scatter1.set_offsets(np.array(scatter1_data))
                 scatter2.set_offsets(np.array(scatter2_data))
@@ -180,6 +186,17 @@ def update(frame):
                     farthest_annotation.remove()
                 nearest_annotation = ax.text(nearest_point[2][0], nearest_point[2][1], 'Min', color='green', fontsize=12)
                 farthest_annotation = ax.text(farthest_point[2][0], farthest_point[2][1], 'Max', color='red', fontsize=12)
+                
+                # Linear Regression for front sonar data
+                if len(front_sonar_points) > 1:
+                    X = np.array(front_sonar_points)[:, 0].reshape(-1, 1)
+                    y = np.array(front_sonar_points)[:, 1]
+                    model.fit(X, y)
+                    x_range = np.linspace(-MAX_DISTANCE, MAX_DISTANCE, 100)
+                    y_range = model.predict(x_range.reshape(-1, 1))
+                    if 'lr_line' in ax.lines:
+                        ax.lines.remove(ax.lines[-1])
+                    ax.plot(x_range, y_range, color='cyan', linewidth=2, label='Front Sonar Regression')
 
                 # Update the angle-time plot
                 current_time = time.time() - start_time
