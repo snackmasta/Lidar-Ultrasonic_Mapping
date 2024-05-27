@@ -5,12 +5,14 @@ import matplotlib.animation as animation
 import math
 import time
 import numpy as np
+from collections import deque
 
 # Constants
 MAX_DISTANCE = 200
+TIME_WINDOW = 60  # Time window for the angle-time plot
 
 # Setup the serial port connection
-ser = serial.Serial('COM3', 9600, timeout=1)
+ser = serial.Serial('COM21', 9600, timeout=1)
 time.sleep(5)  # Allow time for the connection to establish
 
 # Dictionary to store latest data for each angle
@@ -19,12 +21,16 @@ data_dict = {}
 # List to store all points
 all_points = []
 
+# Deques to store timestamps and angles for the angle-time plot
+timestamps = deque(maxlen=TIME_WINDOW)
+angles = deque(maxlen=TIME_WINDOW)
+
 # Create a figure and axis for the scatter plot
 fig, ax = plt.subplots()
 ax.set_xlim(-MAX_DISTANCE, MAX_DISTANCE)
 ax.set_ylim(-MAX_DISTANCE, MAX_DISTANCE)
 scatter1 = ax.scatter([], [], c='blue', s=10, label='Ultrasonic')  # Adjusted size
-scatter2 = ax.scatter([], [], c='red', s=10, label='Lidar')  # Adjusted size
+scatter2 = ax.scatter([], [], c='red', s=10, label='LiDAR')  # Adjusted size
 ax.legend()
 
 # Create a figure and axis for the compass
@@ -51,6 +57,14 @@ farthest_annotation = None
 # Add a black dot at the origin (0,0)
 ax.scatter([0], [0], color='black', zorder=5)
 
+# Create a figure and axis for the angle-time plot
+angle_time_fig, angle_time_ax = plt.subplots()
+angle_time_ax.set_ylim(0, 360)
+angle_time_plot, = angle_time_ax.plot([], [], 'b-')  # Line plot for angle over time
+
+# Initialize start time
+start_time = time.time()
+
 def log_data(log_number, data):
     """Log the data to a file with the given log number."""
     log_dir = './log'
@@ -72,7 +86,7 @@ def update(frame):
                     distance2 = parts[2]
                     log_number = int(parts[3])
                     
-                    # Only process angles in 10-degree steps
+                    # Only process angles in 1-degree steps
                     if compass_angle % 1 != 0:
                         return
                     
@@ -141,6 +155,18 @@ def update(frame):
                     nearest_annotation = ax.text(nearest_point[2][0], nearest_point[2][1], 'Min', color='green', fontsize=12)
                     farthest_annotation = ax.text(farthest_point[2][0], farthest_point[2][1], 'Max', color='red', fontsize=12)
 
+                    # Update the angle-time plot
+                    current_time = time.time() - start_time
+                    timestamps.append(current_time)
+                    angles.append(compass_angle)
+
+                    # Convert timestamps to relative time (seconds)
+                    angle_time_plot.set_data(timestamps, angles)
+
+                    # Adjust x-axis limits dynamically to current time
+                    if len(timestamps) > 1:
+                        angle_time_ax.set_xlim(max(0, timestamps[0]), current_time)
+
         except (UnicodeDecodeError, ValueError) as e:
             print(f"Error processing data: {e}")  # Print error message
 
@@ -148,11 +174,13 @@ def update(frame):
     fig.canvas.draw_idle()
     compass_fig.canvas.draw_idle()
     list_fig.canvas.draw_idle()
+    angle_time_fig.canvas.draw_idle()
 
 # Animate all plots
 ani1 = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
 ani2 = animation.FuncAnimation(compass_fig, update, interval=10, cache_frame_data=False)
 ani3 = animation.FuncAnimation(list_fig, update, interval=10, cache_frame_data=False)
+ani4 = animation.FuncAnimation(angle_time_fig, update, interval=10, cache_frame_data=False)
 
 # Show the plots
 plt.show()
