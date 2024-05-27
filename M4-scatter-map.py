@@ -29,8 +29,10 @@ angles = deque(maxlen=TIME_WINDOW)
 fig, ax = plt.subplots()
 ax.set_xlim(-MAX_DISTANCE, MAX_DISTANCE)
 ax.set_ylim(-MAX_DISTANCE, MAX_DISTANCE)
-scatter1 = ax.scatter([], [], c='blue', s=10, label='Ultrasonic')  # Adjusted size
+scatter1 = ax.scatter([], [], c='blue', s=10, label='frontSonar')  # Adjusted size
 scatter2 = ax.scatter([], [], c='red', s=10, label='LiDAR')  # Adjusted size
+scatter3 = ax.scatter([], [], c='green', s=10, label='rightSonar')  # Adjusted size
+scatter4 = ax.scatter([], [], c='purple', s=10, label='leftSonar')  # Adjusted size
 ax.legend()
 
 # Create a figure and axis for the compass
@@ -80,52 +82,77 @@ def update(frame):
             data = ser.readline().decode('utf-8', errors='ignore').strip()
             if data:
                 parts = list(map(float, data.split(',')))
-                if len(parts) >= 4:
+                if len(parts) >= 6:
                     compass_angle = parts[0]
-                    distance1 = parts[1]
-                    distance2 = parts[2]
-                    log_number = int(parts[3])
-                    
+                    distance1 = parts[1]  # distance for front ultrasonic
+                    distance2 = parts[2]  # distance for front LiDAR
+                    distance3 = parts[3]  # distance for right ultrasonic
+                    distance4 = parts[4]  # distance for left ultrasonic
+                    log_number = int(parts[5])
+
                     # Only process angles in 1-degree steps
                     if compass_angle % 1 != 0:
                         return
-                    
+
                     # Store the latest data for each angle
-                    data_dict[compass_angle] = (distance1, distance2)
-                    
+                    data_dict[compass_angle] = (distance1, distance2, distance3, distance4)
+
                     # Log the data
                     log_data(log_number, data)
-                    
-                    print(f"Compass Angle: {compass_angle}, Distance 1: {distance1}, Distance 2: {distance2}, Log Number: {log_number}")
+
+                    print(f"Compass Angle: {compass_angle}, FrontSonar: {distance1}, FrontLiDAR: {distance2}, RightSonar: {distance3}, LeftSonar: {distance4}, Log Number: {log_number}")
 
                     # Convert polar to Cartesian coordinates
                     radians = math.radians(compass_angle)
+                    radians_right = math.radians(compass_angle + 90)
+                    radians_left = math.radians(compass_angle - 90)
                     x1 = distance1 * math.cos(radians)
                     y1 = distance1 * math.sin(radians)
                     x2 = distance2 * math.cos(radians)
                     y2 = distance2 * math.sin(radians)
+                    x3 = distance3 * math.cos(radians_right)
+                    y3 = distance3 * math.sin(radians_right)
+                    x4 = distance4 * math.cos(radians_left)
+                    y4 = distance4 * math.sin(radians_left)
 
                     # Add new points to the all_points list
                     all_points.append((compass_angle, x1, y1))
                     all_points.append((compass_angle, x2, y2))
+                    all_points.append((compass_angle, x3, y3))
+                    all_points.append((compass_angle, x4, y4))
 
                     # Update all points on the scatter plot
                     scatter1_data = []
                     scatter2_data = []
+                    scatter3_data = []
+                    scatter4_data = []
                     all_distances = []
-                    for angle, (d1, d2) in data_dict.items():
+                    for angle, (d1, d2, d3, d4) in data_dict.items():
                         rad = math.radians(angle)
+                        rad_right = math.radians(angle + 90)
+                        rad_left = math.radians(angle - 90)
                         x1_scatter = d1 * math.cos(rad)
                         y1_scatter = d1 * math.sin(rad)
                         x2_scatter = d2 * math.cos(rad)
                         y2_scatter = d2 * math.sin(rad)
+                        x3_scatter = d3 * math.cos(rad_right)
+                        y3_scatter = d3 * math.sin(rad_right)
+                        x4_scatter = d4 * math.cos(rad_left)
+                        y4_scatter = d4 * math.sin(rad_left)
                         scatter1_data.append((x1_scatter, y1_scatter))
                         scatter2_data.append((x2_scatter, y2_scatter))
+                        scatter3_data.append((x3_scatter, y3_scatter))
+                        scatter4_data.append((x4_scatter, y4_scatter))
+
                         all_distances.append((angle, d1, (x1_scatter, y1_scatter)))
                         all_distances.append((angle, d2, (x2_scatter, y2_scatter)))
-                    
+                        all_distances.append((angle, d3, (x3_scatter, y3_scatter)))
+                        all_distances.append((angle, d4, (x4_scatter, y4_scatter)))
+
                     scatter1.set_offsets(np.array(scatter1_data))
                     scatter2.set_offsets(np.array(scatter2_data))
+                    scatter3.set_offsets(np.array(scatter3_data))
+                    scatter4.set_offsets(np.array(scatter4_data))
 
                     # Update the compass needle
                     compass_needle.set_data([0, math.cos(radians)], [0, math.sin(radians)])
