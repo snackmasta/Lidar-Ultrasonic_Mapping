@@ -12,7 +12,7 @@ MAX_DISTANCE = 200
 TIME_WINDOW = 60  # Time window for the angle-time plot
 
 # Setup the log file connection
-log_file_path = './log/sisi.txt'
+log_file_path = './log/trace.txt'
 log_file = open(log_file_path, 'r')
 
 # Dictionary to store latest data for each angle
@@ -71,7 +71,7 @@ def log_data(log_number, data):
     """Log the data to a file with the given log number."""
     log_dir = './log'
     os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f'log{log_number}.txt')
+    log_file = os.path.join(log_dir, f'traceLog{log_number}.txt')
     with open(log_file, 'a') as file:
         file.write(data + '\n')
 
@@ -95,7 +95,13 @@ def update(frame):
 
                 # Store the latest data for each angle
                 data_dict[compass_angle] = (distance1, distance2, distance3, distance4)
-
+                
+                # Keep track of the 5 most recent angles in data_dict
+                recent_angles = sorted(data_dict.keys(), reverse=True)[:5]
+                for angle in list(data_dict.keys()):
+                    if angle not in recent_angles:
+                        del data_dict[angle]
+                
                 # Log the data
                 log_data(log_number, data)
 
@@ -200,6 +206,7 @@ def update(frame):
                     if hasattr(update, 'lr_line_front'):
                         update.lr_line_front.remove()
                     update.lr_line_front, = ax.plot(x_range, y_range, color='cyan', linewidth=2, label='Front Sonar Regression')
+                    print(f"Front Sonar Regression Line: y = {model.coef_[0]:.2f}x + {model.intercept_:.2f}")
 
                 # Perpendicular Regression for right sonar data
                 if len(right_sonar_points) > 1:
@@ -211,6 +218,7 @@ def update(frame):
                     if hasattr(update, 'lr_line_right'):
                         update.lr_line_right.remove()
                     update.lr_line_right, = ax.plot(x_range, y_range, color='magenta', linewidth=2, label='Right Sonar Regression')
+                    print(f"Right Sonar Regression Line: x = {model.coef_[0]:.2f}y + {model.intercept_:.2f}")
 
                 # Perpendicular Regression for left sonar data
                 if len(left_sonar_points) > 1:
@@ -222,6 +230,7 @@ def update(frame):
                     if hasattr(update, 'lr_line_left'):
                         update.lr_line_left.remove()
                     update.lr_line_left, = ax.plot(x_range, y_range, color='purple', linewidth=2, label='Left Sonar Regression')
+                    print(f"Left Sonar Regression Line: x = {model.coef_[0]:.2f}y + {model.intercept_:.2f}")
 
                 # Update the angle-time plot
                 current_time = time.time() - start_time
