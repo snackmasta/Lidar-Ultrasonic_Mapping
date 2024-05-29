@@ -11,8 +11,11 @@ from collections import deque
 MAX_DISTANCE = 200
 TIME_WINDOW = 60  # Time window for the angle-time plot
 
+# Read the COM port from the file
+com_port = open('./COM.txt', 'r').read().strip()
+
 # Setup the serial port connection
-ser = serial.Serial('COM21', 9600, timeout=1)
+ser = serial.Serial(com_port, 9600, timeout=1)
 time.sleep(5)  # Allow time for the connection to establish
 
 # Dictionary to store latest data for each angle
@@ -28,6 +31,7 @@ angles = deque(maxlen=TIME_WINDOW)
 # Create a figure and axis for the scatter plot
 fig, ax = plt.subplots()
 fig.canvas.manager.set_window_title("Scatter Plot")
+plt.title("Scatter Plot")
 ax.set_xlim(-MAX_DISTANCE, MAX_DISTANCE)
 ax.set_ylim(-MAX_DISTANCE, MAX_DISTANCE)
 scatter1 = ax.scatter([], [], c='blue', s=10, label='frontSonar')  # Adjusted size
@@ -39,6 +43,7 @@ ax.legend()
 # Create a figure and axis for the compass
 compass_fig, compass_ax = plt.subplots()
 compass_fig.canvas.manager.set_window_title("Compass")
+plt.title("Compass")
 compass_ax.set_xlim(-1.5, 1.5)
 compass_ax.set_ylim(-1.5, 1.5)
 compass_needle, = compass_ax.plot([0, 1], [0, 0], 'r-')  # Initial compass needle

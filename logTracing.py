@@ -27,6 +27,8 @@ angles = deque(maxlen=TIME_WINDOW)
 
 # Create a figure and axis for the scatter plot
 fig, ax = plt.subplots()
+fig.canvas.manager.set_window_title("Shape Analysis")
+plt.title("Shape Analysis")
 ax.set_xlim(-MAX_DISTANCE, MAX_DISTANCE)
 ax.set_ylim(-MAX_DISTANCE, MAX_DISTANCE)
 scatter1 = ax.scatter([], [], c='blue', s=10, label='frontSonar')  # Adjusted size
@@ -36,17 +38,17 @@ scatter4 = ax.scatter([], [], c='purple', s=10, label='leftSonar')  # Adjusted s
 ax.legend()
 
 # Create a figure and axis for the compass
-compass_fig, compass_ax = plt.subplots()
-compass_ax.set_xlim(-1.5, 1.5)
-compass_ax.set_ylim(-1.5, 1.5)
-compass_needle, = compass_ax.plot([0, 1], [0, 0], 'r-')  # Initial compass needle
-compass_ax.add_patch(plt.Circle((0, 0), 1, color='b', fill=False))  # Outer circle
+# compass_fig, compass_ax = plt.subplots()
+# compass_ax.set_xlim(-1.5, 1.5)
+# compass_ax.set_ylim(-1.5, 1.5)
+# compass_needle, = compass_ax.plot([0, 1], [0, 0], 'r-')  # Initial compass needle
+# compass_ax.add_patch(plt.Circle((0, 0), 1, color='b', fill=False))  # Outer circle
 
 # Create a figure and axis for the nearest and farthest points
-list_fig, list_ax = plt.subplots()
-list_ax.axis('off')  # Hide the axes
-nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
-farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
+# list_fig, list_ax = plt.subplots()
+# list_ax.axis('off')  # Hide the axes
+# nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
+# farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
 
 # Arrows for nearest and farthest points
 nearest_arrow = None
@@ -60,9 +62,9 @@ farthest_annotation = None
 ax.scatter([0], [0], color='black', zorder=5)
 
 # Create a figure and axis for the angle-time plot
-angle_time_fig, angle_time_ax = plt.subplots()
-angle_time_ax.set_ylim(0, 360)
-angle_time_plot, = angle_time_ax.plot([], [], 'b-')  # Line plot for angle over time
+# angle_time_fig, angle_time_ax = plt.subplots()
+# angle_time_ax.set_ylim(0, 360)
+# angle_time_plot, = angle_time_ax.plot([], [], 'b-')  # Line plot for angle over time
 
 # Initialize start time
 start_time = time.time()
@@ -198,14 +200,14 @@ def update(frame):
                 scatter4.set_offsets(np.array(scatter4_data))
 
                 # Update the compass needle
-                compass_needle.set_data([0, math.cos(radians)], [0, math.sin(radians)])
+                # compass_needle.set_data([0, math.cos(radians)], [0, math.sin(radians)])
 
                 # Find nearest and farthest points from the origin
                 nearest_point = min(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
                 farthest_point = max(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
 
-                nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
-                farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
+                # nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
+                # farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
 
                 # Add arrows for nearest and farthest points
                 if nearest_arrow:
@@ -267,26 +269,26 @@ def update(frame):
                 angles.append(compass_angle)
 
                 # Convert timestamps to relative time (seconds)
-                angle_time_plot.set_data(timestamps, angles)
+                # angle_time_plot.set_data(timestamps, angles)
 
                 # Adjust x-axis limits dynamically to current time
-                if len(timestamps) > 1:
-                    angle_time_ax.set_xlim(max(0, timestamps[0]), current_time)
+                # if len(timestamps) > 1:
+                #     angle_time_ax.set_xlim(max(0, timestamps[0]), current_time)
 
     except (UnicodeDecodeError, ValueError) as e:
         print(f"Error processing data: {e}")  # Print error message
 
     # Redraw all figures
     fig.canvas.draw_idle()
-    compass_fig.canvas.draw_idle()
-    list_fig.canvas.draw_idle()
-    angle_time_fig.canvas.draw_idle()
+    # compass_fig.canvas.draw_idle()
+    # list_fig.canvas.draw_idle()
+    # angle_time_fig.canvas.draw_idle()
 
 # Animate all plots
 ani1 = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
-ani2 = animation.FuncAnimation(compass_fig, update, interval=10, cache_frame_data=False)
-ani3 = animation.FuncAnimation(list_fig, update, interval=10, cache_frame_data=False)
-ani4 = animation.FuncAnimation(angle_time_fig, update, interval=10, cache_frame_data=False)
+# ani2 = animation.FuncAnimation(compass_fig, update, interval=10, cache_frame_data=False)
+# ani3 = animation.FuncAnimation(list_fig, update, interval=10, cache_frame_data=False)
+# ani4 = animation.FuncAnimation(angle_time_fig, update, interval=10, cache_frame_data=False)
 
 # Show the plots
 plt.show()
