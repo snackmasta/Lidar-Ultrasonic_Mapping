@@ -67,6 +67,14 @@ angle_time_plot, = angle_time_ax.plot([], [], 'b-')  # Line plot for angle over 
 # Initialize start time
 start_time = time.time()
 
+# Initialize previous compass angle
+previous_angle = 0
+
+# Initialize angleDifference between angles
+angle_diff = 0  # Initialize angle_diff
+
+recent_anglesList = [] # List of angles
+
 def log_data(log_number, data):
     """Log the data to a file with the given log number."""
     log_dir = './log'
@@ -76,7 +84,7 @@ def log_data(log_number, data):
         file.write(data + '\n')
 
 def update(frame):
-    global nearest_arrow, farthest_arrow, nearest_annotation, farthest_annotation
+    global nearest_arrow, farthest_arrow, nearest_annotation, farthest_annotation, previous_angle, compass_angle, angle_diff, recent_anglesList
     try:
         data = log_file.readline().strip()
         if data:
@@ -90,7 +98,7 @@ def update(frame):
                 log_number = int(parts[5])
 
                 # Only process angles in 1-degree steps
-                if compass_angle % 1 != 0:
+                if compass_angle % 1!= 0:
                     return
 
                 # Store the latest data for each angle
@@ -98,9 +106,28 @@ def update(frame):
                 
                 # Keep track of the 5 most recent angles in data_dict
                 recent_angles = sorted(data_dict.keys(), reverse=True)[:5]
+                recent_anglesReverse = sorted(data_dict.keys())[:5]
+                recent_anglesList = list(data_dict.keys())[:5]
+                
+                # Previous angle and current angle difference
+                angle_diff = abs(compass_angle - recent_anglesList[0])
+                
+                # Delete angles that are not in the recent_angles list
                 for angle in list(data_dict.keys()):
-                    if angle not in recent_angles:
-                        del data_dict[angle]
+                    if compass_angle > previous_angle:
+                        if angle not in recent_angles and angle_diff < 45:
+                            del data_dict[angle]
+                        elif angle_diff > 45:
+                            del data_dict[recent_anglesList[0]]
+                            break
+                    elif compass_angle < previous_angle:
+                        if angle not in recent_anglesReverse and angle_diff < 45:
+                            del data_dict[angle]
+                        elif angle_diff > 45:
+                            del data_dict[recent_anglesList[0]]
+                            break
+                
+                previous_angle = compass_angle
                 
                 # Log the data
                 log_data(log_number, data)
