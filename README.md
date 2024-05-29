@@ -50,7 +50,6 @@ This project involves real-time data plotting and analysis using sensor data fro
 4. **Arduino Setup:**
    - Open the Arduino IDE and upload the `main.ino` code to your Arduino board.
    - Connect the sensors to the Arduino according to the pin definitions in the code.
-   - Ensure the ESP8266 is set up for wireless communication if needed.
 
 ## Wiring
 ```bash
