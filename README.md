@@ -1,92 +1,89 @@
-# Real-Time Data Visualization for Arduino Sensors
+# Real-time Sensor Data Plotting and Analysis
 
-This project involves visualizing real-time data from an Arduino setup that includes a servo motor, ultrasonic sensor, GY26 compass sensor, and TFMini LiDAR sensor. The data is plotted using Python's `matplotlib` library.
+This project involves real-time data plotting and analysis using sensor data from an Arduino setup. The project utilizes sensors such as ultrasonic sensors, a GY26 compass sensor, and a TFMini LiDAR sensor. The data is visualized through scatter plots, compass visualization, and shape analysis.
 
-## Prerequisites
+## Table of Contents
+- [Features](#features)
+- [Setup](#setup)
+- [Usage](#usage)
+- [Files](#files)
+- [Contributing](#contributing)
+- [License](#license)
 
-Ensure you have the following Python packages installed:
-- `pyserial`
-- `matplotlib`
-- `numpy`
+## Features
+- Real-time plotting of sensor data.
+- Visualization of sensor data on scatter plots.
+- Compass visualization.
+- Analysis of nearest and farthest points from the origin.
+- Data logging for further analysis.
+- Conversion of log files to Excel format.
 
-You can install them using pip:
-```bash
-pip install pyserial matplotlib numpy
-```
+## Setup
+1. **Hardware Requirements:**
+   - Arduino with connected sensors:
+     - Ultrasonic sensors
+     - GY26 compass sensor
+     - TFMini LiDAR sensor
+   - ESP8266 for wireless communication.
 
-## Hardware Setup
+2. **Software Requirements:**
+   - Python 3.x
+   - `matplotlib` for plotting
+   - `numpy` for numerical computations
+   - `pandas` for data processing
+   - `openpyxl` for Excel file handling
+   - Arduino IDE
 
-1. Arduino connected to:
-   - Servo motor
-   - Ultrasonic sensor
-   - GY26 compass sensor
-   - TFMini LiDAR sensor
+3. **Installation:**
+   - Clone the repository:
+     ```bash
+     git clone https://github.com/yourusername/yourproject.git
+     ```
+   - Navigate to the project directory:
+     ```bash
+     cd yourproject
+     ```
+   - Install the required Python packages:
+     ```bash
+     pip install -r requirements.txt
+     ```
 
-2. Arduino communicates with the PC via a serial port (`COM3`).
+4. **Arduino Setup:**
+   - Open the Arduino IDE and upload the `main.ino` code to your Arduino board.
+   - Connect the sensors to the Arduino according to the pin definitions in the code.
+   - Ensure the ESP8266 is set up for wireless communication if needed.
 
-## Code Overview
+## Usage
+1. **Running the Scripts:**
+   - Use the provided `run.bat` script to start the Python scripts for real-time plotting and log tracing:
+     1. Navigate to the project directory in the command prompt.
+     2. Run the batch script:
+        ```bash
+        run.bat
+        ```
+     3. Enter the COM port where the Arduino is connected when prompted.
 
-The code reads data from the Arduino through a serial connection, processes the data, and updates four different plots in real-time:
-1. Scatter plot for ultrasonic and LiDAR sensor data.
-2. Compass plot showing the current orientation.
-3. Text display for the nearest and farthest points from the origin.
-4. Angle-time plot for the compass sensor.
+2. **Real-time Plotting:**
+   - Ensure the Arduino is connected to the computer.
+   - The `run.bat` script will automatically clear previous logs, prompt for the COM port, and start the `M5-scatter-map.py` and `logTracing.py` scripts in separate command prompt windows.
 
-### Constants
-- `MAX_DISTANCE`: Maximum distance for the scatter plot axis.
-- `TIME_WINDOW`: Time window for the angle-time plot.
+3. **Converting Logs to Excel:**
+   - Use the `txt2excel.py` script to convert log files to Excel format:
+     ```bash
+     python txt2excel.py
+     ```
+   - This script processes all log files in the `./Log/` directory and saves them as Excel files in the `./logTable/` directory.
 
-### Data Handling
-- Data is read from the serial port and stored in a dictionary.
-- New data points are converted from polar to Cartesian coordinates.
-- The nearest and farthest points from the origin are identified and annotated.
+## Files
+- `main.ino`: Arduino code for reading sensor data and sending it via serial communication.
+- `M5-scatter-map.py`: Script for real-time data plotting.
+- `logTracing.py`: Script for analyzing logged data.
+- `txt2excel.py`: Script for converting log files to Excel format.
+- `run.bat`: Batch script to clear logs, prompt for COM port, and run Python scripts.
+- `requirements.txt`: List of required Python packages.
 
-### Visualization
-- Scatter plot for sensor data with distinct colors for ultrasonic (blue) and LiDAR (red) points.
-- Compass plot with a needle indicating the current direction.
-- Text annotations and arrows for nearest and farthest points.
-- Angle-time plot displaying the compass angle over time.
+## Contributing
+Contributions are welcome! Please fork the repository and create a pull request with your changes.
 
-## Running the Code
-
-1. Connect the Arduino to your PC and ensure it is recognized as `COM3`.
-2. Run the Python script:
-   ```bash
-   python real_time_visualization.py
-   ```
-
-### Example Data Format
-
-The Arduino should send data in the following format:
-```
-<compass_angle>,<distance1>,<distance2>,<log_number>
-```
-- `compass_angle`: Angle from the compass sensor (in degrees).
-- `distance1`: Distance from the ultrasonic sensor (in cm).
-- `distance2`: Distance from the LiDAR sensor (in cm).
-- `log_number`: An identifier for logging purposes.
-
-## Logging
-
-Data is logged to text files in a `log` directory. Each log file is named `log<log_number>.txt`.
-
-### Log File Example
-
-```
-<compass_angle>,<distance1>,<distance2>,<log_number>
-...
-
-# Example
-45, 100.0, 95.0, 1
-90, 120.0, 110.0, 1
-...
-
-```
-
-## Notes
-
-- Ensure the correct serial port (`COM3`) is used.
-- Adjust the constants as needed for your specific setup.
-- The plots will automatically update in real-time as new data is received.
-
-Enjoy visualizing your sensor data!
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
