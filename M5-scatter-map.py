@@ -55,6 +55,15 @@ compass_ax.add_patch(plt.Circle((0, 0), 1, color='b', fill=False))  # Outer circ
 # nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
 # farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
 
+# Add clock numbers to the compass plot
+for i in range(12):
+    angle = i * 30
+    radians = -math.radians(angle)
+    radians += math.radians(60)
+    x = 1.1 * math.cos(radians)
+    y = 1.1 * math.sin(radians)
+    compass_ax.text(x, y, str(i + 1), ha='center', va='center', fontsize=12)
+
 # Arrows for nearest and farthest points
 nearest_arrow = None
 farthest_arrow = None
