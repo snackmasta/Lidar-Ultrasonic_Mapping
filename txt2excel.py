@@ -5,7 +5,7 @@ import pandas as pd
 log_dir = './Log/'
 
 # Get a list of all log files in the directory
-log_files = [f for f in os.listdir(log_dir) if f.startswith('log') and f.endswith('.txt')]
+log_files = [f for f in os.listdir(log_dir) if f.endswith('.txt')]
 
 # Process each log file
 for log_file in log_files:
@@ -23,7 +23,7 @@ for log_file in log_files:
         if line.strip():  # Ensure the line is not empty
             parts = line.split(',')
             if len(parts) == 4:
-                angle, ultrasonic, lidar, log_number = parts
+                angle, ultrasonic, lidar, _ = parts
                 angles.append(int(angle))
                 ultrasonic_data.append(int(ultrasonic))
                 lidar_data.append(int(lidar))
@@ -43,8 +43,11 @@ for log_file in log_files:
     df_transposed.insert(0, 'Header', headers)
 
     # Determine the output file name
-    log_number = log_file[3:-4]  # Extract log number from file name
+    log_number = log_file[:-4]  # Extract log number from file name
     output_file = f'./logTable/logTable{log_number}.xlsx'
+
+    # Create the output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     # Write the DataFrame to an Excel file
     df_transposed.to_excel(output_file, header=False, index=False)

@@ -9,7 +9,7 @@ import numpy as np
 MAX_DISTANCE = 200
 
 # Setup the serial port connection
-ser = serial.Serial('COM21', 9600, timeout=1)
+ser = serial.Serial('COM6', 9600, timeout=1)
 time.sleep(5)  # Allow time for the connection to establish
 
 angles = []

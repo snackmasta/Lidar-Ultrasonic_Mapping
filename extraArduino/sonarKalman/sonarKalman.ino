@@ -3,22 +3,19 @@
 #include <NewPing.h>
 #include <GY26Compass.h>
 
-#define TRIGGER_PIN_1  12  // Sonar 1
-#define ECHO_PIN_1     11
-#define TRIGGER_PIN_2  10  // Sonar 2
-#define ECHO_PIN_2     9
-#define TRIGGER_PIN_3   8  // Sonar 3
-#define ECHO_PIN_3     7
-#define SONAR_NUM 3
+#define TRIGGER_PIN  12 
+#define ECHO_PIN     11  
+#define TRIGGER_PIN2  10  // Second sonar sensor trigger pin
+#define ECHO_PIN2     9   // Second sonar sensor echo pin
+#define TRIGGER_PIN3  8   // Third sonar sensor trigger pin
+#define ECHO_PIN3     7   // Third sonar sensor echo pin
+
 #define MAX_DISTANCE 200 
 #define BUTTON_PIN   6    // Define the pin for the pushbutton
 
-NewPing sonar[SONAR_NUM] = {   
-  NewPing(TRIGGER_PIN_1, ECHO_PIN_1, MAX_DISTANCE),
-  NewPing(TRIGGER_PIN_2, ECHO_PIN_2, MAX_DISTANCE),
-  NewPing(TRIGGER_PIN_3, ECHO_PIN_3, MAX_DISTANCE)
-};
-
+NewPing sonar1(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); 
+NewPing sonar2(TRIGGER_PIN2, ECHO_PIN2, MAX_DISTANCE); 
+NewPing sonar3(TRIGGER_PIN3, ECHO_PIN3, MAX_DISTANCE); 
 GY26_I2C_Compass compass(0x70);
 TFMini tfmini;
 SoftwareSerial SerialTFMini(4, 5); // The only value that matters here is the first one, 2, Rx
@@ -85,7 +82,9 @@ void setup() {
 void loop() {
   int l = 0;
   int t = 0;
-  int totalDistance = 0;
+  int totalDistance1 = 0;
+  int totalDistance2 = 0;
+  int totalDistance3 = 0;
   int distance = 0;
   int strength = 0;
 
@@ -93,14 +92,25 @@ void loop() {
   while(!distance) {
     getTFminiData(&distance, &strength);
     if(distance) {
-      totalDistance = 0;
-      int averageDistance = totalDistance / it;
+      totalDistance1 = 0;
+      for (t = 0; t < it; t++) {
+        unsigned int uS1 = sonar1.ping_cm();
+        unsigned int uS2 = sonar2.ping_cm();
+        unsigned int uS3 = sonar3.ping_cm();
+        totalDistance1 += uS1;
+        totalDistance1 += uS2;
+        totalDistance1 += uS3;
+      }
+
+      int averageDistance1 = totalDistance1 / it;
+      int averageDistance2 = totalDistance2 / it;
+      int averageDistance3 = totalDistance3 / it;
       float compassAngle = compass.getCompassAngle();
       // Convert compassAngle to an integer by truncating
       int compassAngleInt = (int)compassAngle;
 
       // kalman filter
-      SensorData = compassAngle;
+      SensorData = averageDistance1;
       Xt_update = Xt_prev;
       Pt_update = Pt_prev + Q;
       Kt = Pt_update/(Pt_update + R);
@@ -109,22 +119,19 @@ void loop() {
     
       Xt_prev = Xt;
       Pt_prev = Pt;
-    
+
       KalmanFilterData = Xt;
+
       // Convert KalmanFilterData to an integer by truncating
       int KalmanFilterDataInt = (int)KalmanFilterData;
 
       Serial.print(compassAngleInt);
       Serial.print(",");
-      Serial.print(distance);
-      
-      for (uint8_t i = 0; i < SONAR_NUM; i++) {
-        Serial.print(",");
-        Serial.print(sonar[i].ping_cm());
-      }
-      
+      Serial.print(KalmanFilterDataInt);
       Serial.print(",");
-      Serial.println(logNumber);
+      Serial.print(averageDistance1);
+      Serial.print(",");
+      Serial.print(logNumber);
     }
   }
 

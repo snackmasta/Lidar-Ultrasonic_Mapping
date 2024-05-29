@@ -11,7 +11,7 @@ MAX_DISTANCE = 200
 TIME_WINDOW = 60  # Time window for the angle-time plot
 
 # Setup the log file connection
-log_file_path = './log/KalmanFilter.txt'
+log_file_path = './log/noKalmanFilter.txt'
 log_file = open(log_file_path, 'r')
 
 # Dictionary to store latest data for each angle

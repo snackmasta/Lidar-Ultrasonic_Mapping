@@ -1,4 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "RawInputGY26\\RawInputGY26.ino"
+    "sketch": "main\\main.ino",
+    "port": "COM3"
 }

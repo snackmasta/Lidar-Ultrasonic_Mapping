@@ -1,54 +1,54 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import symbols, Eq, solve
 
-# Define the coefficients for the regression lines
-# Front Sonar Regression Line: y = -0.54x + 104.58
-m_front, b_front = -0.54, 104.58
-# Right Sonar Regression Line: x = -0.00y + -49.87 -> y = -49.87 / -0.00
-m_right, b_right = 0, -49.87  # Note: m_right is effectively zero, we need to handle this case
-# Left Sonar Regression Line: x = -0.00y + 99.75 -> y = 99.75 / -0.00
-m_left, b_left = 0, 99.75  # Note: m_left is effectively zero, we need to handle this case
+# Define parameters for the lines
+slope = 0
+intercept = 130.15
 
-# Create a range of x values
-x = np.linspace(-200, 200, 400)
-# Create a range of y values for lines where m = 0
-y = np.linspace(-200, 200, 400)
+# Define the line equations
+def line1(x):
+    return slope * x + intercept
 
-# Calculate y values for the Front Sonar line
-y_front = m_front * x + b_front
+def line2(y):
+    return (-slope * y - intercept)
 
-# Since m_right and m_left are effectively zero, the lines are vertical
-# Right Sonar: x = -49.87
-x_right = np.full_like(y, b_right)
-# Left Sonar: x = 99.75
-x_left = np.full_like(y, b_left)
+def line3(y):
+    return (-slope * y + intercept)
+
+# Generate x values for plotting
+x_values = np.linspace(-200, 200, 400)  # Adjust the range as needed
 
 # Plot the lines
-plt.plot(x, y_front, label='Front Sonar Regression Line: y = -0.54x + 104.58')
-plt.axvline(x=b_right, color='orange', linestyle='--', label='Right Sonar Regression Line: x = -49.87')
-plt.axvline(x=b_left, color='green', linestyle='--', label='Left Sonar Regression Line: x = 99.75')
+plt.figure(figsize=(8, 6))
 
-# Find the intersection points manually since two lines are vertical
-# Intersection of Front Sonar and Right Sonar
-intersection_x_right = b_right
-intersection_y_right = m_front * intersection_x_right + b_front
+plt.plot(x_values, line1(x_values), label=f'y = {slope}x + {intercept}')
+plt.plot(line2(x_values), x_values, label=f'x = {-slope}y - {intercept}')
+plt.plot(line3(x_values), x_values, label=f'x = {-slope}y + {intercept}')
 
-# Intersection of Front Sonar and Left Sonar
-intersection_x_left = b_left
-intersection_y_left = m_front * intersection_x_left + b_front
+# Find intersection points
+x, y = symbols('x y')
+eq1 = Eq(y, slope * x + intercept)
+eq2 = Eq(x, -slope * y - intercept)
+eq3 = Eq(x, -slope * y + intercept)
 
-# Plot the intersection points
-plt.scatter(intersection_x_right, intersection_y_right, color='red')
-plt.text(intersection_x_right, intersection_y_right, f'  ({intersection_x_right:.2f}, {intersection_y_right:.2f})', color='red')
-plt.scatter(intersection_x_left, intersection_y_left, color='blue')
-plt.text(intersection_x_left, intersection_y_left, f'  ({intersection_x_left:.2f}, {intersection_y_left:.2f})', color='blue')
+solution1 = solve((eq1, eq2), (x, y))
+solution2 = solve((eq1, eq3), (x, y))
 
-# Add labels and a legend
+intersection_x1, intersection_y1 = solution1[x], solution1[y]
+intersection_x2, intersection_y2 = solution2[x], solution2[y]
+
+plt.plot(intersection_x1, intersection_y1, 'ro', label=f'Intersection 1 ({intersection_x1:.2f}, {intersection_y1:.2f})')
+plt.plot(intersection_x2, intersection_y2, 'go', label=f'Intersection 2 ({intersection_x2:.2f}, {intersection_y2:.2f})')
+
 plt.xlabel('x')
 plt.ylabel('y')
+plt.title('Plot of lines and their intersections')
 plt.legend()
-plt.title('Intersection of Sonar Regression Lines')
 plt.grid(True)
-
-# Show the plot
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
 plt.show()
+
+print(f"Intersection 1: ({intersection_x1:.2f}, {intersection_y1:.2f})")
+print(f"Intersection 2: ({intersection_x2:.2f}, {intersection_y2:.2f})")
