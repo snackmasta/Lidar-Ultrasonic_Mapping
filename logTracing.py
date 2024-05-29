@@ -12,7 +12,7 @@ MAX_DISTANCE = 200
 TIME_WINDOW = 60  # Time window for the angle-time plot
 
 # Setup the log file connection
-log_file_path = './log/trace.txt'
+log_file_path = './log/log1.txt'
 log_file = open(log_file_path, 'r')
 
 # Dictionary to store latest data for each angle
@@ -135,9 +135,10 @@ def update(frame):
                 print(f"Compass Angle: {compass_angle}, FrontSonar: {distance1}, FrontLiDAR: {distance2}, RightSonar: {distance3}, LeftSonar: {distance4}, Log Number: {log_number}")
 
                 # Convert polar to Cartesian coordinates
-                radians = math.radians(compass_angle)
-                radians_right = math.radians(compass_angle + 90)
-                radians_left = math.radians(compass_angle - 90)
+                radians = -math.radians(compass_angle)
+                radians += math.radians(90)
+                radians_right = -math.radians(compass_angle + 90) + math.radians(90)
+                radians_left = -math.radians(compass_angle - 90) + math.radians(90)
                 x1 = distance1 * math.cos(radians)
                 y1 = distance1 * math.sin(radians)
                 x2 = distance2 * math.cos(radians)
@@ -164,9 +165,10 @@ def update(frame):
                 left_sonar_points = []
 
                 for angle, (d1, d2, d3, d4) in data_dict.items():
-                    rad = math.radians(angle)
-                    rad_right = math.radians(angle + 90)
-                    rad_left = math.radians(angle - 90)
+                    rad = -math.radians(angle)
+                    rad += math.radians(90)
+                    rad_right = -math.radians(angle + 90) + math.radians(90)
+                    rad_left = -math.radians(angle - 90) + math.radians(90)
                     x1_scatter = d1 * math.cos(rad)
                     y1_scatter = d1 * math.sin(rad)
                     x2_scatter = d2 * math.cos(rad)
