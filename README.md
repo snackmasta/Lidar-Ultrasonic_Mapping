@@ -7,8 +7,6 @@ This project involves real-time data plotting and analysis using sensor data fro
 - [Setup](#setup)
 - [Usage](#usage)
 - [Files](#files)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 - Real-time plotting of sensor data.
@@ -81,9 +79,3 @@ This project involves real-time data plotting and analysis using sensor data fro
 - `txt2excel.py`: Script for converting log files to Excel format.
 - `run.bat`: Batch script to clear logs, prompt for COM port, and run Python scripts.
 - `requirements.txt`: List of required Python packages.
-
-## Contributing
-Contributions are welcome! Please fork the repository and create a pull request with your changes.
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
