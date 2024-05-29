@@ -23,7 +23,7 @@ This project involves real-time data plotting and analysis using sensor data fro
      - Ultrasonic sensors
      - GY26 compass sensor
      - TFMini LiDAR sensor
-   - ESP8266 for wireless communication.
+   - Push button
 
 2. **Software Requirements:**
    - Python 3.x
@@ -36,11 +36,11 @@ This project involves real-time data plotting and analysis using sensor data fro
 3. **Installation:**
    - Clone the repository:
      ```bash
-     git clone https://github.com/yourusername/yourproject.git
+     git clone https://github.com/snackmasta/Lidar-Ultrasonic_Mapping.git
      ```
    - Navigate to the project directory:
      ```bash
-     cd yourproject
+     cd Lidar-Ultrasonic_Mapping
      ```
    - Install the required Python packages:
      ```bash
