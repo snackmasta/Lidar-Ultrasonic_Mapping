@@ -5,6 +5,7 @@ This project involves real-time data plotting and analysis using sensor data fro
 ## Table of Contents
 - [Features](#features)
 - [Setup](#setup)
+- [Wiring](#wiring)
 - [Usage](#usage)
 - [Files](#files)
 
@@ -50,6 +51,26 @@ This project involves real-time data plotting and analysis using sensor data fro
    - Open the Arduino IDE and upload the `main.ino` code to your Arduino board.
    - Connect the sensors to the Arduino according to the pin definitions in the code.
    - Ensure the ESP8266 is set up for wireless communication if needed.
+
+## Wiring
+```bash
+Arduino Pins:
+5V  ------> VCC (TFMini LiDAR, GY26 Compass, Ultrasonic Sensors)
+GND ------> GND (TFMini LiDAR, GY26 Compass, Ultrasonic Sensors, Pushbutton)
+
+Pins:
+4   ------> RX (TFMini LiDAR)
+5   ------> TX (TFMini LiDAR)
+6   ------> One pin of Pushbutton (Other pin to GND)
+7   ------> Echo (Ultrasonic Sensor 3)
+8   ------> Trigger (Ultrasonic Sensor 3)
+9   ------> Echo (Ultrasonic Sensor 2)
+10  ------> Trigger (Ultrasonic Sensor 2)
+11  ------> Echo (Ultrasonic Sensor 1)
+12  ------> Trigger (Ultrasonic Sensor 1)
+A4  ------> SDA (GY26 Compass)
+A5  ------> SCL (GY26 Compass)
+```
 
 ## Usage
 1. **Running the Scripts:**
