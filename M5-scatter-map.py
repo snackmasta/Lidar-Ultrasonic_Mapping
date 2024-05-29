@@ -50,10 +50,10 @@ compass_needle, = compass_ax.plot([0, 1], [0, 0], 'r-')  # Initial compass needl
 compass_ax.add_patch(plt.Circle((0, 0), 1, color='b', fill=False))  # Outer circle
 
 # Create a figure and axis for the nearest and farthest points
-# list_fig, list_ax = plt.subplots()
-# list_ax.axis('off')  # Hide the axes
-# nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
-# farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
+list_fig, list_ax = plt.subplots()
+list_ax.axis('off')  # Hide the axes
+nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
+farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
 
 # Add clock numbers to the compass plot
 for i in range(12):
@@ -118,6 +118,21 @@ def update(frame):
 
                     print(f"Compass Angle: {compass_angle}, FrontSonar: {distance1}, FrontLiDAR: {distance2}, RightSonar: {distance3}, LeftSonar: {distance4}, Log Number: {log_number}")
 
+                    # Calculate mean, median, and mode for distances
+                    all_distances = [distance for _, (distance1, distance2, distance3, distance4) in data_dict.items() for distance in [distance1, distance2, distance3, distance4]]
+                    mean_distance = sum(all_distances) / len(all_distances)
+                    median_distance = sorted(all_distances)[len(all_distances) // 2]
+                    mode_distance = max(set(all_distances), key=all_distances.count)
+
+                    # Update the list plot with mean, median, and mode
+                    list_ax.clear()
+                    list_ax.axis('off')  # Hide the axes
+                    nearest_text = list_ax.text(0.1, 0.9, '', fontsize=12, verticalalignment='top')
+                    farthest_text = list_ax.text(0.1, 0.6, '', fontsize=12, verticalalignment='top')
+                    mean_text = list_ax.text(0.1, 0.3, f'Mean Distance: {mean_distance:.2f}', fontsize=12, verticalalignment='top')
+                    median_text = list_ax.text(0.1, 0.2, f'Median Distance: {median_distance:.2f}', fontsize=12, verticalalignment='top')
+                    mode_text = list_ax.text(0.1, 0.1, f'Mode Distance: {mode_distance:.2f}', fontsize=12, verticalalignment='top')
+
                     # Convert polar to Cartesian coordinates
                     radians = -math.radians(compass_angle)
                     radians += math.radians(90)
@@ -179,8 +194,8 @@ def update(frame):
                     nearest_point = min(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
                     farthest_point = max(all_distances, key=lambda item: math.sqrt(item[2][0]**2 + item[2][1]**2))
 
-                    # nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
-                    # farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
+                    nearest_text.set_text(f'Nearest Point:\nAngle: {nearest_point[0]}\nDistance: {nearest_point[1]:.2f}')
+                    farthest_text.set_text(f'Farthest Point:\nAngle: {farthest_point[0]}\nDistance: {farthest_point[1]:.2f}')
 
                     # Add arrows for nearest and farthest points
                     if nearest_arrow:
@@ -218,13 +233,13 @@ def update(frame):
     # Redraw all figures
     fig.canvas.draw_idle()
     compass_fig.canvas.draw_idle()
-    # list_fig.canvas.draw_idle()
+    list_fig.canvas.draw_idle()
     # angle_time_fig.canvas.draw_idle()
 
 # Animate all plots
 ani1 = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
 ani2 = animation.FuncAnimation(compass_fig, update, interval=10, cache_frame_data=False)
-# ani3 = animation.FuncAnimation(list_fig, update, interval=10, cache_frame_data=False)
+ani3 = animation.FuncAnimation(list_fig, update, interval=10, cache_frame_data=False)
 # ani4 = animation.FuncAnimation(angle_time_fig, update, interval=10, cache_frame_data=False)
 
 # Show the plots
