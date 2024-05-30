@@ -20,13 +20,13 @@ echo COM%COM_PORT% >> %COM_PATH%
 start cmd
 
 :: Start the M5 Scatter Plot script in a separate command prompt window
-start cmd /k "python M5-scatter-map.py"
+start cmd /k "python3 M5-scatter-map.py"
 
 :: Wait for 5 seconds to allow the M5 Scatter Plot script to start
 timeout /t 5 > NUL
 
 :: Start the Log Tracing script in the same command prompt window
-python logTracing.py
+python3 logTracing.py
 
 :: Wait for the scripts to finish
 pause
