@@ -107,9 +107,9 @@ def update(frame):
                 data_dict[compass_angle] = (distance1, distance2, distance3, distance4)
                 
                 # Keep track of the 5 most recent angles in data_dict
-                recent_angles = sorted(data_dict.keys(), reverse=True)[:5]
-                recent_anglesReverse = sorted(data_dict.keys())[:5]
-                recent_anglesList = list(data_dict.keys())[:5]
+                recent_angles = sorted(data_dict.keys(), reverse=True)[:25]
+                recent_anglesReverse = sorted(data_dict.keys())[:25]
+                recent_anglesList = list(data_dict.keys())[:25]
                 
                 # Previous angle and current angle difference
                 angle_diff = abs(compass_angle - recent_anglesList[0])
