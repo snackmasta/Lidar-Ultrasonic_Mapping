@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "main\\main.ino",
+    "sketch": "main-noLiDAR+3servo.ino",
     "port": "COM3"
 }

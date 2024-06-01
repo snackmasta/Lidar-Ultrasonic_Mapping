@@ -29,6 +29,16 @@ float SensorData, lidarFilter;
 float Xt[SONAR_NUM], Xt_update[SONAR_NUM], Xt_prev[SONAR_NUM];
 float Pt[SONAR_NUM], Pt_update[SONAR_NUM], Pt_prev[SONAR_NUM];
 float Kt[SONAR_NUM], R, Q;
+int compassAngleInt;
+int angleLog[25];
+int difference;
+int angleSum;
+String sweepRight[75];
+String sweepLeft[75];
+
+void staticAngle(float angle){
+  
+}
 
 void setup() {  
   pinMode(BUTTON_PIN, INPUT_PULLUP); // Set button pin as input with internal pull-up resistor
@@ -51,42 +61,67 @@ void setup() {
 
 void loop() {
   int totalDistance = 0;
+  String serialData[compassAngleInt];
 
   totalDistance = 0;
   int averageDistance = totalDistance / it;
-  float compassAngle = compass.getCompassAngle();
-  // Convert compassAngle to an integer by truncating
+  int sonarFiltered[SONAR_NUM];
+    float compassAngle = compass.getCompassAngle();
   int compassAngleInt = (int)compassAngle;
 
-  int sonarFiltered[SONAR_NUM];
+  // Serial.print(compassAngleInt);
+  // Serial.print(",");
+  // Serial.print(sonarFiltered[0]);
+  // Serial.print(",");
+  // Serial.print(sonarFiltered[0]);
+  // Serial.print(",");
+  // Serial.print(sonarFiltered[1]);
+  // Serial.print(",");
+  // Serial.print(sonarFiltered[2]);
+  // Serial.print(",");
+  // Serial.println(logNumber);
 
-  for (uint8_t i = 0; i < SONAR_NUM; i++) {
-    // Kalman filter
-    SensorData = sonar[i].ping_cm();
-    Xt_update[i] = Xt_prev[i];
-    Pt_update[i] = Pt_prev[i] + Q;
-    Kt[i] = Pt_update[i] / (Pt_update[i] + R);
-    Xt[i] = Xt_update[i] + (Kt[i] * (SensorData - Xt_update[i]));
-    Pt[i] = (1 - Kt[i]) * Pt_update[i];
-  
-    Xt_prev[i] = Xt[i];
-    Pt_prev[i] = Pt[i];
+  // serialData[compassAngleInt] = compassAngleInt, sonarFiltered[0], sonarFiltered[0], sonarFiltered[1], sonarFiltered[2], logNumber;
 
-    sonarFiltered[i] = (int)Xt[i];
+  int sum = 0;
+
+  for (int i = 0; i < 10; i++) {
+    angleLog[i] = compass.getCompassAngle();
+
+    for (uint8_t i = 0; i < SONAR_NUM; i++) {
+      // Kalman filter
+      SensorData = sonar[i].ping_cm();
+      Xt_update[i] = Xt_prev[i];
+      Pt_update[i] = Pt_prev[i] + Q;
+      Kt[i] = Pt_update[i] / (Pt_update[i] + R);
+      Xt[i] = Xt_update[i] + (Kt[i] * (SensorData - Xt_update[i]));
+      Pt[i] = (1 - Kt[i]) * Pt_update[i];
+    
+      Xt_prev[i] = Xt[i];
+      Pt_prev[i] = Pt[i];
+
+      sonarFiltered[i] = (int)Xt[i];
+    }
+
+    // for (int i = 1; i <= 10; i++) {
+    //   sum += abs(angleLog[i]); 
+    // }
+    sum = angleLog[0] + angleLog[1] + angleLog[2] + angleLog[3] + angleLog[4] + angleLog[5] + angleLog[6] + angleLog[7] + angleLog[8] + angleLog[9] + angleLog[10];
+    difference = sum / compassAngleInt;   
+
+    for (int i = 0; i < 10; i++) {
+      Serial.print(angleLog[i]);
+      Serial.print(",");
+    }
+
+    Serial.print(sum);
+    Serial.print(",");
+    Serial.print(compassAngleInt);
+    Serial.print(",");
+    Serial.println(difference);
   }
-
-  Serial.print(compassAngleInt);
-  Serial.print(",");
-  Serial.print(sonarFiltered[0]);
-  Serial.print(",");
-  Serial.print(sonarFiltered[0]);
-  Serial.print(",");
-  Serial.print(sonarFiltered[1]);
-  Serial.print(",");
-  Serial.print(sonarFiltered[2]);
-  Serial.print(",");
-  Serial.println(logNumber);
-    // Check if the pushbutton is pressed
+  
+  // Check if the pushbutton is pressed
   if (digitalRead(BUTTON_PIN) == LOW) {
     logNumber++;
     delay(200); // Debounce delay
