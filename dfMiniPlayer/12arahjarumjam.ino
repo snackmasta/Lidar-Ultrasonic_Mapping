@@ -7,7 +7,7 @@ GY26_I2C_Compass compass(0x70);
 float localDeclinationAngle = 0.0; 
 float compassAngle;
 
-SoftwareSerial mySerial(2, 3); // Pin RX dan TX
+SoftwareSerial mySerial(2, 3); //RX 3, TX 2
 
 // Function to convert angle to compass direction
 String getCompassDirection(float angle) {
