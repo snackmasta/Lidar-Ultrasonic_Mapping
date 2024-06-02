@@ -30,6 +30,7 @@ float SensorData, lidarFilter;
 float Xt[SONAR_NUM], Xt_update[SONAR_NUM], Xt_prev[SONAR_NUM];
 float Pt[SONAR_NUM], Pt_update[SONAR_NUM], Pt_prev[SONAR_NUM];
 float Kt[SONAR_NUM], R, Q;
+int lastAngle[10]; // Array to store the last 10 angles
 
 void setup() {  
   pinMode(BUTTON_PIN, INPUT_PULLUP); // Set button pin as input with internal pull-up resistor
@@ -100,13 +101,10 @@ int sonarKalman(int i){
   return (int)Xt[i];
 }
 
-int detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
+void detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
   // counter reset at 10
   if (counter == 10) {
-    counter = 1;
-  }
-  else {
-    counter++;
+    counter = 0; // Reset counter to 0
   }
 
   // Get the current compass angle
@@ -115,15 +113,18 @@ int detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
   currentAngle = (int)compassAngle;
 
   // Check if the compass is in motion with tolerance of 10 degrees
-  if (abs(currentAngle - startAngle) > 10) {
-    startAngle = currentAngle;
+  if (abs(lastAngle[0] - lastAngle[9]) > 10) {
+    startAngle = lastAngle[0];
     stopAngle = currentAngle;
   }
   else {
     stopAngle = currentAngle;
-  }
+  }    
   
-  // print counter
+  // Update lastAngle array
+  lastAngle[counter++] = currentAngle;
+
+  // Print counter
   Serial.print(counter);
   Serial.print(",");
 }
