@@ -42,7 +42,7 @@ void setup() {
   compass.setDeclinationAngle(localDeclinationAngle - 6);
 
   // Kalman filter
-  R = 10;
+  R = 5;
   Q = 0.5;
   for (int i = 0; i < SONAR_NUM; i++) {
     Pt_prev[i] = 1;
