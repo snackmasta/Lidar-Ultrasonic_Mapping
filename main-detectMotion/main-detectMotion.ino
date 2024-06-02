@@ -25,6 +25,7 @@ float localDeclinationAngle = 0.0;
 float compassAngle;
 int dist;
 int logNumber = 1; // Initialize logNumber to 1
+int counter = 1;
 float SensorData, lidarFilter;
 float Xt[SONAR_NUM], Xt_update[SONAR_NUM], Xt_prev[SONAR_NUM];
 float Pt[SONAR_NUM], Pt_update[SONAR_NUM], Pt_prev[SONAR_NUM];
@@ -42,47 +43,49 @@ void setup() {
   compass.setDeclinationAngle(localDeclinationAngle - 6);
 
   // Kalman filter
-  R = 5;
+  R = 10;
   Q = 0.5;
   for (int i = 0; i < SONAR_NUM; i++) {
     Pt_prev[i] = 1;
   }
-  Serial.println("setup complete");
 }
 
 void loop() {
-  int totalDistance = 0;
+  int currentAngle;
+  int startAngle;
+  int stopAngle;
 
-  totalDistance = 0;
-  int averageDistance = totalDistance / it;
-  float compassAngle = compass.getCompassAngle();
-  // Convert compassAngle to an integer by truncating
-  int compassAngleInt = (int)compassAngle;
+  detectMotions(currentAngle, startAngle, stopAngle); 
 
-  Serial.print(compassAngleInt);
+  int sonarFront = sonarKalman(0);
+  int sonarLeft = sonarKalman(1);
+  int sonarRight = sonarKalman(2);
+
+  Serial.print(currentAngle);
   Serial.print(",");
-  Serial.print(sonarKalman(0));
+  Serial.print(sonarFront); // front
   Serial.print(",");
-  Serial.print(sonarKalman(0));
+  Serial.print(sonarFront); //
   Serial.print(",");
-  Serial.print(sonarKalman(1));
+  Serial.print(sonarLeft); // left
   Serial.print(",");
-  Serial.print(sonarKalman(2));
+  Serial.print(sonarRight); // right
   Serial.print(",");
-  Serial.println(logNumber);
-  
+  Serial.println(logRecord());
+
+  delay(1);
+}
+
+int logRecord(){
   // Check if the pushbutton is pressed
   if (digitalRead(BUTTON_PIN) == LOW) {
     logNumber++;
     delay(200); // Debounce delay
   }
-
-  delay(10);
+  return logNumber;
 }
 
-int sonarKalman(int i) {
-  int sonarFiltered[SONAR_NUM];
-  
+int sonarKalman(int i){
   // Kalman filter
   SensorData = sonar[i].ping_cm();
   Xt_update[i] = Xt_prev[i];
@@ -94,6 +97,33 @@ int sonarKalman(int i) {
   Xt_prev[i] = Xt[i];
   Pt_prev[i] = Pt[i];
 
-  sonarFiltered[i] = (int)Xt[i];
-  return sonarFiltered[i];
+  return (int)Xt[i];
+}
+
+int detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
+  // counter reset at 10
+  if (counter == 10) {
+    counter = 1;
+  }
+  else {
+    counter++;
+  }
+
+  // Get the current compass angle
+  float compassAngle = compass.getCompassAngle();
+  // Convert compassAngle to an integer by truncating
+  currentAngle = (int)compassAngle;
+
+  // Check if the compass is in motion with tolerance of 10 degrees
+  if (abs(currentAngle - startAngle) > 10) {
+    startAngle = currentAngle;
+    stopAngle = currentAngle;
+  }
+  else {
+    stopAngle = currentAngle;
+  }
+  
+  // print counter
+  Serial.print(counter);
+  Serial.print(",");
 }
