@@ -47,6 +47,7 @@ void setup() {
   for (int i = 0; i < SONAR_NUM; i++) {
     Pt_prev[i] = 1;
   }
+  Serial.println("setup complete");
 }
 
 void loop() {
@@ -58,39 +59,41 @@ void loop() {
   // Convert compassAngle to an integer by truncating
   int compassAngleInt = (int)compassAngle;
 
-  int sonarFiltered[SONAR_NUM];
-
-  for (uint8_t i = 0; i < SONAR_NUM; i++) {
-    // Kalman filter
-    SensorData = sonar[i].ping_cm();
-    Xt_update[i] = Xt_prev[i];
-    Pt_update[i] = Pt_prev[i] + Q;
-    Kt[i] = Pt_update[i] / (Pt_update[i] + R);
-    Xt[i] = Xt_update[i] + (Kt[i] * (SensorData - Xt_update[i]));
-    Pt[i] = (1 - Kt[i]) * Pt_update[i];
-  
-    Xt_prev[i] = Xt[i];
-    Pt_prev[i] = Pt[i];
-
-    sonarFiltered[i] = (int)Xt[i];
-  }
-
   Serial.print(compassAngleInt);
   Serial.print(",");
-  Serial.print(sonarFiltered[0]);
+  Serial.print(sonarKalman(0));
   Serial.print(",");
-  Serial.print(sonarFiltered[0]);
+  Serial.print(sonarKalman(0));
   Serial.print(",");
-  Serial.print(sonarFiltered[1]);
+  Serial.print(sonarKalman(1));
   Serial.print(",");
-  Serial.print(sonarFiltered[2]);
+  Serial.print(sonarKalman(2));
   Serial.print(",");
   Serial.println(logNumber);
-    // Check if the pushbutton is pressed
+  
+  // Check if the pushbutton is pressed
   if (digitalRead(BUTTON_PIN) == LOW) {
     logNumber++;
     delay(200); // Debounce delay
   }
 
-  delay(10);
+  delay(10);
+}
+
+int sonarKalman(int i) {
+  int sonarFiltered[SONAR_NUM];
+  
+  // Kalman filter
+  SensorData = sonar[i].ping_cm();
+  Xt_update[i] = Xt_prev[i];
+  Pt_update[i] = Pt_prev[i] + Q;
+  Kt[i] = Pt_update[i] / (Pt_update[i] + R);
+  Xt[i] = Xt_update[i] + (Kt[i] * (SensorData - Xt_update[i]));
+  Pt[i] = (1 - Kt[i]) * Pt_update[i];
+
+  Xt_prev[i] = Xt[i];
+  Pt_prev[i] = Pt[i];
+
+  sonarFiltered[i] = (int)Xt[i];
+  return sonarFiltered[i];
 }
