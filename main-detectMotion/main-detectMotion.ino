@@ -30,7 +30,7 @@ float SensorData, lidarFilter;
 float Xt[SONAR_NUM], Xt_update[SONAR_NUM], Xt_prev[SONAR_NUM];
 float Pt[SONAR_NUM], Pt_update[SONAR_NUM], Pt_prev[SONAR_NUM];
 float Kt[SONAR_NUM], R, Q;
-int lastAngle[10]; // Array to store the last 10 angles
+int lastAngle[25]; // Array to store the last 10 angles
 
 void setup() {  
   pinMode(BUTTON_PIN, INPUT_PULLUP); // Set button pin as input with internal pull-up resistor
@@ -62,16 +62,16 @@ void loop() {
   int sonarLeft = sonarKalman(1);
   int sonarRight = sonarKalman(2);
 
-  Serial.print(currentAngle);
-  Serial.print(",");
-  Serial.print(sonarFront); // front
-  Serial.print(",");
-  Serial.print(sonarFront); //
-  Serial.print(",");
-  Serial.print(sonarLeft); // left
-  Serial.print(",");
-  Serial.print(sonarRight); // right
-  Serial.print(",");
+  // Serial.print(currentAngle);
+  // Serial.print(",");
+  // Serial.print(sonarFront); // front
+  // Serial.print(",");
+  // Serial.print(sonarFront); //
+  // Serial.print(",");
+  // Serial.print(sonarLeft); // left
+  // Serial.print(",");
+  // Serial.print(sonarRight); // right
+  // Serial.print(",");
   Serial.println(logRecord());
 
   delay(1);
@@ -124,7 +124,19 @@ void detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
   // Update lastAngle array
   lastAngle[counter++] = currentAngle;
 
-  // Print counter
-  Serial.print(counter);
+  // Debug lastAngle array
+  for (int i = 0; i < 10; i++) {
+    Serial.print(lastAngle[i]);
+    Serial.print(",");
+  }
+  Serial.print("startAngle: ");
+  Serial.print(startAngle);
   Serial.print(",");
+  Serial.print("stopAngle: ");
+  Serial.print(stopAngle);
+  Serial.print(",");
+
+  // Print counter
+  // Serial.print(counter);
+  // Serial.print(",");
 }
