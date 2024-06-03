@@ -16,9 +16,13 @@ class SonarModule {
 public:
   SonarModule();
   int ping(int index);
+  int kalmanFilter(int index);
 
 private:
   NewPing sonar[SONAR_NUM];
+  float Xt[SONAR_NUM], Xt_update[SONAR_NUM], Xt_prev[SONAR_NUM];
+  float Pt[SONAR_NUM], Pt_update[SONAR_NUM], Pt_prev[SONAR_NUM];
+  float Kt[SONAR_NUM], R, Q;
 };
 
 #endif
