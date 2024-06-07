@@ -4,28 +4,28 @@
 
 SonarModule sonarModule;
 
-Servo myservo1;  // create Servo1
-Servo myservo2;  // create Servo2
-Servo myservo3;  // create Servo3
+Servo myservo1; 
+Servo myservo2; 
+Servo myservo3; 
 
-int it = 1; // Number of iterations for averaging distance
+int it = 1; 
 float localDeclinationAngle = 0.0; 
 float compassAngle;
-int logNumber = 1; // Initialize logNumber to 1
+int logNumber = 1; 
 int sonarFrontMemory[90];
 int sonarLeftMemory[90];
 int sonarRightMemory[90];
 int startAngleMemory[4];
 int cumulativeAngleMemory[30];
-int pos = 0;    // variable to store the servo position
+int pos = 0;    
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  myservo1.attach(4);  // attaches the servo1 on pin 4 to the Servo object
-  myservo2.attach(5);  // attaches the servo2 on pin 5 to the Servo object
-  myservo3.attach(6);  // attaches the servo3 on pin 6 to the Servo object
+  myservo1.attach(4);  
+  myservo2.attach(5);  
+  myservo3.attach(6);  
   Serial.println("Servo Setup complete");
 }
 
@@ -40,21 +40,20 @@ void loop() {
   static int address2 = 0;
   static int diff = 0;
 
-  for (pos = 90; pos >=0; pos -= 10) { // goes from 90 degrees to 0 degrees per 10 derajat
-    // in steps of 1 degree
+  for (pos = 90; pos >=0; pos -= 10) { 
     myservo1.write(pos);  
     myservo2.write(pos); 
-    myservo3.write(pos);              // tell servo to go to position in variable 'pos'
+    myservo3.write(pos);            
     PrintSerial(pos);
-    delay(0.1);                       // waits 15 ms for the servo to reach the position
+    delay(0.1);                     
   }
 
-  for (pos = 0; pos <= 90; pos += 10) { // goes from 0 degrees to 90 degrees per 10 derajat
+  for (pos = 0; pos <= 90; pos += 10) { 
     myservo1.write(pos); 
     myservo2.write(pos); 
-    myservo3.write(pos);              // tell servo to go to position in variable 'pos'
+    myservo3.write(pos);             
     PrintSerial(pos);
-    delay(0.1);                       // waits 15 ms for the servo to reach the position
+    delay(0.1);                      
   }
 
   address2 = address;
