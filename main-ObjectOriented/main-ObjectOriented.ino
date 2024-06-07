@@ -28,18 +28,30 @@ void loop() {
   int currentAngle;
   int startAngle;
   int stopAngle;
-  int trigger;
+  int angleRange[75];
   static int counter = 0;
   int memoryCounter = compassModule.detectMotions(currentAngle, startAngle, stopAngle);
 
   int sonarFront = sonarModule.kalmanFilter(0);
   int sonarLeft = sonarModule.kalmanFilter(1);
   int sonarRight = sonarModule.kalmanFilter(2);
-  
-  angleMemory[memoryCounter] = currentAngle;
-  sonarFrontMemory[memoryCounter] = sonarFront;
-  sonarLeftMemory[memoryCounter] = sonarLeft;
-  sonarRightMemory[memoryCounter] = sonarRight;
+
+  // save 75 different angles with each distance data
+  angleRange[memoryCounter] = currentAngle;
+
+  // check if current angle is already appear in angleRange
+  for (int i = 0; i < memoryCounter; i++) {
+    if (angleRange[i] == currentAngle) {
+      break;
+    }
+    else
+    angleMemory[memoryCounter] = currentAngle;
+    sonarFrontMemory[memoryCounter] = sonarFront;
+    sonarLeftMemory[memoryCounter] = sonarLeft;
+    sonarRightMemory[memoryCounter] = sonarRight;
+  } 
+
+
   startAngleMemory[counter] = startAngle; 
 
   if (counter == 3) {
@@ -53,21 +65,30 @@ void loop() {
 //   Serial.print(",");
 //   Serial.println(startAngleMemory[3]);
 
-  if (abs(startAngleMemory[1] - startAngleMemory[3]) > 30) {
+  if (abs(startAngleMemory[1] - startAngleMemory[3]) > 5) {
     for (int i = 0; i < 75; i++) {
-     Serial.print(angleMemory[i]);
-     Serial.print(",");
-     Serial.print(sonarFrontMemory[i]);
-     Serial.print(",");
-     Serial.print(sonarLeftMemory[i]);
-     Serial.print(",");
-     Serial.print(sonarRightMemory[i]);
-     Serial.print(",");
-     Serial.println(logRecord());
+    //  Serial.print(angleMemory[i]);
+    //  Serial.print(",");
+    //  Serial.print(sonarFrontMemory[i]);
+    //  Serial.print(",");
+    //  Serial.print(sonarFrontMemory[i]);
+    //  Serial.print(",");
+    //  Serial.print(sonarLeftMemory[i]);
+    //  Serial.print(",");
+    //  Serial.print(sonarRightMemory[i]);
+    //  Serial.print(",");
+    //  Serial.println(logRecord());
     }
   }
 
-  delay(1);
+  clearArrays;
+
+  Serial.println(logRecord());
+  Serial.print(", Start Angle: ");
+  Serial.print(startAngle);
+  Serial.print(", Stop Angle: ");
+  Serial.println(stopAngle);
+
 }
 
 int logRecord(){
@@ -76,4 +97,24 @@ int logRecord(){
     delay(200); // Debounce delay
   }
   return logNumber;
+}
+
+int memoryAddress(bool reset){
+  static int address = 0;
+  if (reset) {
+    address = 0;
+  }
+  return address + 1;
+}
+
+void clearArrays() {
+  for (int i = 0; i < 75; i++) {
+    sonarFrontMemory[i] = 0;
+    sonarLeftMemory[i] = 0;
+    sonarRightMemory[i] = 0;
+    angleMemory[i] = 0;
+  }
+  for (int i = 0; i < 4; i++) {
+    startAngleMemory[i] = 0;
+  }
 }

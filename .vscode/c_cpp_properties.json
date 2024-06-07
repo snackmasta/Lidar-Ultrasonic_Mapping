@@ -33,8 +33,6 @@
             "includePath": [
                 "C:\\Users\\Legion\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino",
                 "C:\\Users\\Legion\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\variants\\standard",
-                "C:\\Users\\Legion\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\libraries\\SoftwareSerial\\src",
-                "C:\\Users\\Legion\\Documents\\Arduino\\libraries\\TFMini\\src",
                 "C:\\Users\\Legion\\Documents\\Arduino\\libraries\\NewPing\\src",
                 "C:\\Users\\Legion\\Documents\\Arduino\\libraries\\GY26Compass\\src",
                 "C:\\Users\\Legion\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\libraries\\Wire\\src",

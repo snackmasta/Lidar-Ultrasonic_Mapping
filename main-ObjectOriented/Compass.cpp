@@ -20,16 +20,16 @@ int CompassModule::detectMotions(int &currentAngle, int &startAngle, int &stopAn
   }
 
   // another counter up to 75 named memoryCounter
-  if (memoryCounter == 75) {
-    memoryCounter = 0;
-  }
-  memoryCounter++;
+  // if (memoryCounter == 75) {
+  //   memoryCounter = 0;
+  // }
+  // memoryCounter++;
 
   float compassAngle = getCompassAngle();
   currentAngle = (int)compassAngle;
   
   // Save then capture the startAngle and stopAngle (threshold = 10 degrees)
-  if (abs(lastAngle[0] - lastAngle[9]) > 10) {
+  if (abs(lastAngle[0] - lastAngle[9]) > 5) {
     startAngle = lastAngle[0];
     stopAngle = currentAngle;
   }
