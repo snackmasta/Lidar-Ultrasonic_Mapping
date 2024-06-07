@@ -13,7 +13,7 @@ float CompassModule::getCompassAngle() {
   return compass.getCompassAngle();
 }
 
-int CompassModule::detectMotions(int &currentAngle, int &startAngle, int &stopAngle){
+int CompassModule::detectMotions(int &currentAngle, int &startAngle, int &stopAngle, int &diff){
   // counter last 10 angles
   if (counter == 10) {
     counter = 0;
@@ -29,7 +29,7 @@ int CompassModule::detectMotions(int &currentAngle, int &startAngle, int &stopAn
   }
   mean = mean / 10;
 
-  int diff = abs(mean - currentAngle);
+  diff = abs(mean - currentAngle);
   
   // Save then capture the startAngle and stopAngle (threshold = 10 degrees)
   if (diff < 5) {
@@ -43,19 +43,11 @@ int CompassModule::detectMotions(int &currentAngle, int &startAngle, int &stopAn
   lastAngle[counter++] = currentAngle;
 
   // Serial.println(logRecord());
-  Serial.print("Start Angle: ");
-  Serial.print(startAngle);
-  Serial.print(", Stop Angle: ");
-  Serial.print(stopAngle);
-  Serial.print(", Diff: ");
-  Serial.print(diff);
-  Serial.print(" ");
-
-  // debug last angle array
-  for (int i = 0; i < 10; i++) {
-    Serial.print(lastAngle[i]);
-    Serial.print(",");
-  }
-
-  Serial.println();
+  // Serial.print("Start Angle: ");
+  // Serial.print(startAngle);
+  // Serial.print(", Stop Angle: ");
+  // Serial.print(stopAngle);
+  // Serial.print(", Diff: ");
+  // Serial.print(diff);
+  // Serial.print(" ");
 }

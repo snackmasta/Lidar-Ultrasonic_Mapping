@@ -29,41 +29,64 @@ void loop() {
   int startAngle;
   int stopAngle;
   int angleRange[75];
-  static int counter = 0;
+  static int address = 0;
+  static int send = 0;
+  static int address1 = 0;
+  static int address2 = 0;
+  static int diff = 0;
 
-  compassModule.detectMotions(currentAngle, startAngle, stopAngle);
+  compassModule.detectMotions(currentAngle, startAngle, stopAngle, diff);
 
   int sonarFront = sonarModule.kalmanFilter(0);
   int sonarLeft = sonarModule.kalmanFilter(1);
   int sonarRight = sonarModule.kalmanFilter(2);
 
-  if (abs(startAngleMemory[1] - startAngleMemory[3]) > 5) {
+  // Normalize angles
+  startAngle = normalizeAngle(startAngle);
+  stopAngle = normalizeAngle(stopAngle);
+
+  // Record angle correlated with sonar
+  address = calculateAddress(startAngle, currentAngle);
+  // Serial.println(address);
+  angleMemory[address] = currentAngle;
+  sonarFrontMemory[address] = sonarFront;
+  sonarRightMemory[address] = sonarRight;
+  sonarLeftMemory[address] = sonarLeft;
+
+  // if address is larger than 10 and counting down
+  address1 = address;
+  if (abs(address1 - address2) > 20) {
+    send = 1;
+  }
+
+  if (send == 1) {
+
     for (int i = 0; i < 75; i++) {
-    //  Serial.print(angleMemory[i]);
-    //  Serial.print(",");
-    //  Serial.print(sonarFrontMemory[i]);
-    //  Serial.print(",");
-    //  Serial.print(sonarFrontMemory[i]);
-    //  Serial.print(",");
-    //  Serial.print(sonarLeftMemory[i]);
-    //  Serial.print(",");
-    //  Serial.print(sonarRightMemory[i]);
-    //  Serial.print(",");
-    //  Serial.println(logRecord());
+      Serial.print(angleMemory[i]);
+      Serial.print(",");
+      Serial.print(sonarFrontMemory[i]);
+      Serial.print(",");
+      Serial.print(sonarFrontMemory[i]);
+      Serial.print(",");
+      Serial.print(sonarLeftMemory[i]);
+      Serial.print(",");
+      Serial.print(sonarRightMemory[i]);
+      Serial.print(",");
+      Serial.println(logRecord());
+    }
+
+    for (int ite = 0; ite < 75; ite++) {
+      sonarFrontMemory[ite] = 0;
+      sonarRightMemory[ite] = 0;
+      sonarLeftMemory[ite] = 0;
     }
   }
 
-  clearArrays;
-
-  // Serial.println(logRecord());
-  // Serial.print(", Start Angle: ");
-  // Serial.print(startAngle);
-  // Serial.print(", Stop Angle: ");
-  // Serial.println(stopAngle);
-
+  address2 = address;
+  send = 0;
 }
 
-int logRecord(){
+int logRecord() {
   if (buttonModule.isPressed()) {
     logNumber++;
     delay(200); // Debounce delay
@@ -71,7 +94,7 @@ int logRecord(){
   return logNumber;
 }
 
-int memoryAddress(bool reset){
+int memoryAddress(bool reset) {
   static int address = 0;
   if (reset) {
     address = 0;
@@ -89,4 +112,22 @@ void clearArrays() {
   for (int i = 0; i < 4; i++) {
     startAngleMemory[i] = 0;
   }
+}
+
+int normalizeAngle(int angle) {
+  while (angle < 0) {
+    angle += 360;
+  }
+  while (angle >= 360) {
+    angle -= 360;
+  }
+  return angle;
+}
+
+int calculateAddress(int startAngle, int currentAngle) {
+  int diff = abs(currentAngle - startAngle);
+  if (diff < 0) {
+    diff += 360;
+  }
+  return diff % 75; // Ensure the address is within the array bounds
 }
