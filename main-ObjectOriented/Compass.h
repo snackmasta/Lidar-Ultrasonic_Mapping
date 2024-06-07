@@ -14,7 +14,7 @@ private:
   GY26_I2C_Compass compass;
   int lastAngle[25];
   int counter;
-  int memoryCounter;
+  // int memoryCounter;
 };
 
 #endif
