@@ -4,9 +4,7 @@
 
 SonarModule sonarModule;
 
-Servo myservo1; 
-Servo myservo2; 
-Servo myservo3; 
+Servo myservo; 
 
 int it = 1; 
 float localDeclinationAngle = 0.0; 
@@ -23,9 +21,7 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  myservo1.attach(4);  
-  myservo2.attach(5);  
-  myservo3.attach(6);  
+  myservo.attach(6);  
   Serial.println("Servo Setup complete");
 }
 
@@ -40,49 +36,30 @@ void loop() {
   static int address2 = 0;
   static int diff = 0;
 
-  for (pos = 90; pos >=0; pos -= 10) { 
-    myservo1.write(pos);  
-    myservo2.write(pos); 
-    myservo3.write(pos);            
-    PrintSerial(pos);
-    delay(0.1);                     
+  // oscillate myservo between 0 and 90
+  for (pos = 40; pos <= 90; pos += 1) {
+    myservo.write(pos);
+    delay(5);
   }
 
-  for (pos = 0; pos <= 90; pos += 10) { 
-    myservo1.write(pos); 
-    myservo2.write(pos); 
-    myservo3.write(pos);             
-    PrintSerial(pos);
-    delay(0.1);                      
+  PrintSerial();
+
+  for (pos = 90; pos >= 40; pos -= 1) {
+    myservo.write(pos);
+    delay(5);
   }
 
   address2 = address;
   send = 0;
 }
 
-void clearArrays() {
-  for (int i = 0; i < 75; i++) {
-    sonarFrontMemory[i] = 0;
-    sonarLeftMemory[i] = 0;
-    sonarRightMemory[i] = 0;
-    angleMemory[i] = 0;
-  }
-  for (int i = 0; i < 4; i++) {
-    startAngleMemory[i] = 0;
-  }
-}
-
-int PrintSerial(int i){
+int PrintSerial(){
   int sonarFront = sonarModule.kalmanFilter(0);
   int sonarLeft = sonarModule.kalmanFilter(1);
   int sonarRight = sonarModule.kalmanFilter(2);
 
-  sonarFrontMemory[i] = sonarFront;
-  sonarLeftMemory[i] = sonarLeft;
-  sonarRightMemory[i] = sonarRight;
-
-  Serial.print(i);
-  Serial.print(",");
+  // Serial.print();
+  // Serial.print(",");
   Serial.print(sonarFront);
   Serial.print(",");
   Serial.print(sonarFront);
