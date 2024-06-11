@@ -3,8 +3,7 @@
 #include <Servo.h>
 
 SonarModule sonarModule;
-
-Servo myservo; 
+Servo myservo;
 
 int it = 1; 
 float localDeclinationAngle = 0.0; 
@@ -15,7 +14,13 @@ int sonarLeftMemory[90];
 int sonarRightMemory[90];
 int startAngleMemory[4];
 int cumulativeAngleMemory[30];
-int pos = 0;    
+int pos = 0;
+
+unsigned long previousMillisServo = 0;
+const long intervalServo = 3; // interval for servo movement
+unsigned long previousMillisSonar = 0;
+const long intervalSonar = 50; // interval for sonar reading
+bool increasing = true;
 
 void setup() {
   Serial.begin(9600);
@@ -26,40 +31,40 @@ void setup() {
 }
 
 void loop() {
-  int currentAngle;
-  int startAngle;
-  int stopAngle;
-  int angleRange[75];
-  static int address = 0;
-  static int send = 0;
-  static int address1 = 0;
-  static int address2 = 0;
-  static int diff = 0;
-
-  // oscillate myservo between 0 and 90
-  for (pos = 40; pos <= 90; pos += 1) {
+  unsigned long currentMillis = millis();
+  
+  // Servo Control
+  if (currentMillis - previousMillisServo >= intervalServo) {
+    previousMillisServo = currentMillis;
+    
+    if (increasing) {
+      pos++;
+      if (pos >= 90) {
+        increasing = false;
+      }
+    } else {
+      pos--;
+      if (pos <= 40) {
+        increasing = true;
+      }
+    }
     myservo.write(pos);
-    delay(5);
   }
 
-  PrintSerial();
-
-  for (pos = 90; pos >= 40; pos -= 1) {
-    myservo.write(pos);
-    delay(5);
+  // Sonar Reading
+  if (currentMillis - previousMillisSonar >= intervalSonar) {
+    previousMillisSonar = currentMillis;
+    PrintSerial(pos);
   }
-
-  address2 = address;
-  send = 0;
 }
 
-int PrintSerial(){
+int PrintSerial(int i){
   int sonarFront = sonarModule.kalmanFilter(0);
   int sonarLeft = sonarModule.kalmanFilter(1);
   int sonarRight = sonarModule.kalmanFilter(2);
 
-  // Serial.print();
-  // Serial.print(",");
+  Serial.print(i);
+  Serial.print(",");
   Serial.print(sonarFront);
   Serial.print(",");
   Serial.print(sonarFront);
