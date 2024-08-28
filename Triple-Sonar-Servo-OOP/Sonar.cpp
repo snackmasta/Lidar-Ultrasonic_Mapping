@@ -8,7 +8,7 @@ SonarModule::SonarModule() :
   }
 {
   // Initialize Kalman filter parameters
-  R = 10;
+  R = 1;
   Q = 0.5;
   for (int i = 0; i < SONAR_NUM; i++) {
     Pt_prev[i] = 1;

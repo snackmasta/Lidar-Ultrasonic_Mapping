@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "main-ObjectOriented\\main-ObjectOriented.ino",
+    "sketch": "Triple-Sonar-Servo-OOP\\Triple-Sonar-Servo-OOP.ino",
     "port": "COM3"
 }

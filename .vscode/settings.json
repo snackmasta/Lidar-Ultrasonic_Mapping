@@ -60,6 +60,7 @@
   "files.associations": {
     "*.ino": "cpp",
     "cmath": "cpp",
-    "cstdlib": "cpp"
+    "cstdlib": "cpp",
+    "*.tcc": "cpp"
   }
 }
